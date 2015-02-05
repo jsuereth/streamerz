@@ -31,7 +31,9 @@ object Resizer {
       val iratio = image.getHeight().toDouble / image.getWidth()
       val testHeight = (ratio * maxWidth + 0.5).toInt
       (maxWidth, testHeight)
-    } else (testWidth, maxHeight)
+    } else {
+      (testWidth, maxHeight)
+    }
 
     forcedScale(image, width, height)
   }

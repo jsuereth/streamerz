@@ -18,7 +18,8 @@ lazy val video =
 
 lazy val ffmpeg =
   project.settings(commonSettings:_*).settings(
-   libraryDependencies ++= Seq(Deps.akkaStreams, Deps.xuggler)
+   libraryDependencies ++= Seq(Deps.akkaStreams, Deps.xuggler),
+   resolvers += "xuggler-repo" at "http://xuggle.googlecode.com/svn/trunk/repo/share/java/"
  ).dependsOn(video)
 
 lazy val webcam =

@@ -37,7 +37,11 @@ object Ansi {
     val g = toAnsiiSpace(c.getGreen)
     val b = toAnsiiSpace(c.getBlue)
     // TODO - Check the code is valid.
-    ANSI_BASIC_BASE + ((r * 36) + (g * 6) + (b))
+    val code = ANSI_BASIC_BASE + ((r * 36) + (g * 6) + (b))
+    if(code < ANSI_BASIC_BASE) ANSI_BASIC_BASE
+    // TODO - what's the max?
+    else if(code > 255) 255
+    else code
   }
   /** Convert a color into the closest possible ANSI equivalent. */
   def FOREGROUND_COLOR(c: Color): String = {

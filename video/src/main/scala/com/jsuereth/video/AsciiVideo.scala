@@ -20,7 +20,7 @@ object AsciiVideo {
   val colorAscii = asciiConversion(Ascii.toCharacterColoredAscii)
 
 
-  def asciiConversion(asciifier: BufferedImage => String, maxWidth: Int = 120, maxHeight: Int = 60): Flow[VideoFrame, AsciiVideoFrame] = {
+  def asciiConversion(asciifier: BufferedImage => String, maxWidth: Int = 80, maxHeight: Int = 40): Flow[VideoFrame, AsciiVideoFrame] = {
     Flow.empty[VideoFrame].map { frame =>
       AsciiVideoFrame(asciifier(Resizer.preserveRatioScale(frame.image, maxWidth, maxHeight)), frame.timeStamp, frame.timeUnit)
     }
