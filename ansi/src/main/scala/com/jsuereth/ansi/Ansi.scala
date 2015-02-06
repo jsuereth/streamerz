@@ -18,7 +18,6 @@ object Ansi {
   val CLEAR_SCREEN = s"${CSI}2J"
   /** Resets the current color */
   val RESET_COLOR = SGR(0)
-  Console.RESET
   /** Sets the text to be bold */
   val BOLD = SGR(1)
   /** Sets the text to be underlined. */

@@ -29,4 +29,14 @@ lazy val webcam =
 
 
 lazy val examples =
-  project.settings(commonSettings:_*).dependsOn(image, ffmpeg, webcam)
+  project.settings(commonSettings:_*).dependsOn(image, ffmpeg, webcam).settings(
+    fork in (Compile, run) := true,
+    assemblyMergeStrategy in assembly := {
+      case PathList("org", "xmlpull", xs @ _*)        => MergeStrategy.first
+      case x =>
+        val oldStrategy = (assemblyMergeStrategy in assembly).value
+        oldStrategy(x)
+    },
+    mainClass in assembly := Some("examples.AsciiVideo"),
+    assemblyJarName in assembly := "console-roll.jar"
+  )

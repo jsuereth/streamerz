@@ -4,8 +4,7 @@ package ffmpeg
 import java.io.File
 import java.net.URI
 import akka.stream.actor.{ActorPublisherMessage, ActorPublisher}
-import com.xuggle.mediatool.ToolFactory
-import com.xuggle.mediatool.MediaListenerAdapter
+import com.xuggle.mediatool.{IMediaViewer, ToolFactory, MediaListenerAdapter}
 import com.xuggle.mediatool.event.ICloseEvent
 import com.xuggle.mediatool.event.IVideoPictureEvent
 import com.xuggle.xuggler.Utils
@@ -17,7 +16,7 @@ import org.reactivestreams.Publisher
 private[ffmpeg] case class FFMpegError(raw: IError) extends Exception(raw.getDescription)
 
 /** An actor which reads the given file on demand. */
-private[ffmpeg] class FFMpegPublisher(file: URI) extends ActorPublisher[VideoFrame] {
+private[ffmpeg] class FFMpegPublisher(file: URI, playAudio: Boolean) extends ActorPublisher[VideoFrame] {
   private var closed: Boolean = false
   private var frameCount: Long = 0L
 
@@ -32,6 +31,15 @@ private[ffmpeg] class FFMpegPublisher(file: URI) extends ActorPublisher[VideoFra
       }
     }
   })
+  if(playAudio) {
+    // Note: Xuggle requires the classloader be the system classloader, if it uses Java audio which is broken.
+    //val old = Thread.currentThread().getContextClassLoader
+    //Thread.currentThread().setContextClassLoader(ClassLoader.getSystemClassLoader)
+    //try {
+    val audioPlayback = ToolFactory.makeViewer(IMediaViewer.Mode.AUDIO_ONLY)
+    reader.addListener(audioPlayback)
+    //} finally Thread.currentThread().setContextClassLoader(old)
+  }
   /** Our actual behavior. */
   override def receive: Receive = {
     case ActorPublisherMessage.Request(elements) => read(elements)
@@ -63,6 +71,6 @@ private[ffmpeg] class FFMpegPublisher(file: URI) extends ActorPublisher[VideoFra
   }
 }
 private[ffmpeg] object FFMpegPublisher {
-  def apply(factory: ActorRefFactory, file: URI): Publisher[VideoFrame] =
-    ActorPublisher(factory.actorOf(Props(new FFMpegPublisher(file))))
+  def apply(factory: ActorRefFactory, file: URI, playAudio: Boolean = false): Publisher[VideoFrame] =
+    ActorPublisher(factory.actorOf(Props(new FFMpegPublisher(file, playAudio))))
 }
