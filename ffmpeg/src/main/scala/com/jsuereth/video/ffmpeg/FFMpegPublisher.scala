@@ -4,9 +4,8 @@ package ffmpeg
 import java.io.File
 import java.net.URI
 import akka.stream.actor.{ActorPublisherMessage, ActorPublisher}
-import com.xuggle.mediatool.{IMediaViewer, ToolFactory, MediaListenerAdapter}
-import com.xuggle.mediatool.event.ICloseEvent
-import com.xuggle.mediatool.event.IVideoPictureEvent
+import com.xuggle.mediatool.{IMediaListener, IMediaViewer, ToolFactory, MediaListenerAdapter}
+import com.xuggle.mediatool.event._
 import com.xuggle.xuggler.Utils
 import com.xuggle.xuggler.IError
 import akka.actor.{Props, ActorRefFactory}
@@ -36,7 +35,7 @@ private[ffmpeg] class FFMpegPublisher(file: URI, playAudio: Boolean) extends Act
     //val old = Thread.currentThread().getContextClassLoader
     //Thread.currentThread().setContextClassLoader(ClassLoader.getSystemClassLoader)
     //try {
-    val audioPlayback = ToolFactory.makeViewer(IMediaViewer.Mode.AUDIO_ONLY)
+    val audioPlayback = new AudioPlayer()
     reader.addListener(audioPlayback)
     //} finally Thread.currentThread().setContextClassLoader(old)
   }
@@ -73,4 +72,43 @@ private[ffmpeg] class FFMpegPublisher(file: URI, playAudio: Boolean) extends Act
 private[ffmpeg] object FFMpegPublisher {
   def apply(factory: ActorRefFactory, file: URI, playAudio: Boolean = false): Publisher[VideoFrame] =
     ActorPublisher(factory.actorOf(Props(new FFMpegPublisher(file, playAudio))))
+}
+// A helper which ensures classloader is correct before any attempts hit Java Sound.
+private class AudioPlayer() extends IMediaListener {
+  private val viewer = withSystemClassLoader(ToolFactory.makeViewer(IMediaViewer.Mode.AUDIO_ONLY))
+
+  override def onVideoPicture(iVideoPictureEvent: IVideoPictureEvent): Unit =
+    viewer.onVideoPicture(iVideoPictureEvent)
+  override def onWriteHeader(iWriteHeaderEvent: IWriteHeaderEvent): Unit =
+    viewer.onWriteHeader(iWriteHeaderEvent)
+  override def onFlush(iFlushEvent: IFlushEvent): Unit =
+    viewer.onFlush(iFlushEvent)
+  override def onOpenCoder(iOpenCoderEvent: IOpenCoderEvent): Unit =
+    withSystemClassLoader(viewer.onOpenCoder(iOpenCoderEvent))
+  override def onAudioSamples(iAudioSamplesEvent: IAudioSamplesEvent): Unit =
+    viewer.onAudioSamples(iAudioSamplesEvent)
+  override def onWritePacket(iWritePacketEvent: IWritePacketEvent): Unit =
+    viewer.onWritePacket(iWritePacketEvent)
+  override def onCloseCoder(iCloseCoderEvent: ICloseCoderEvent): Unit =
+    viewer.onCloseCoder(iCloseCoderEvent)
+  override def onClose(iCloseEvent: ICloseEvent): Unit =
+    viewer.onClose(iCloseEvent)
+  override def onWriteTrailer(iWriteTrailerEvent: IWriteTrailerEvent): Unit =
+    viewer.onWriteTrailer(iWriteTrailerEvent)
+  override def onOpen(iOpenEvent: IOpenEvent): Unit =
+    withSystemClassLoader(viewer.onOpen(iOpenEvent))
+  override def onReadPacket(iReadPacketEvent: IReadPacketEvent): Unit =
+    viewer.onReadPacket(iReadPacketEvent)
+  override def onAddStream(iAddStreamEvent: IAddStreamEvent): Unit =
+    withSystemClassLoader(viewer.onAddStream(iAddStreamEvent))
+
+
+  private def withSystemClassLoader[A](f: => A) = {
+    val thread = Thread.currentThread()
+    val old = thread.getContextClassLoader
+    val systemCl = ClassLoader.getSystemClassLoader
+    thread.setContextClassLoader(systemCl)
+    try f
+    finally thread.setContextClassLoader(old)
+  }
 }
