@@ -10,6 +10,9 @@ val commonSettings: Seq[Setting[_]] = Seq(
 lazy val ansi =
   project.settings(commonSettings:_*)
 
+lazy val ansiui =
+   project.settings(commonSettings:_*).dependsOn(ansi).settings(libraryDependencies += Deps.jansi)
+
 lazy val image =
   project.settings(commonSettings:_*).dependsOn(ansi)
 

@@ -6,4 +6,5 @@ object Deps {
   val xuggler = "org.boofcv" % "xuggler" % "0.17"
   val webcam = "com.github.sarxos" % "webcam-capture" % "0.3.9"
   val scalatest = "org.scalatest" %% "scalatest" % "2.2.0"
+  val jansi = "org.fusesource.jansi" % "jansi" % "1.11"
 }

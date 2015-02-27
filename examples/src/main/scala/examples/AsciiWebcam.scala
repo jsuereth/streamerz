@@ -34,6 +34,11 @@ object AsciiWebcamSnap {
     asciifier.take(1).runWith(webcam, Sink.foreach { frame =>
       result.success(frame.image + Ansi.RESET_COLOR)
     })(FlowMaterializer(settings))
+    // ensure sbt console doesn't become unresponsive.
+    import concurrent.ExecutionContext.Implicits.global
+    result.future.onComplete {
+      x => system.shutdown()
+    }
     result.future
   }
 }
