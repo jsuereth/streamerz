@@ -13,10 +13,14 @@ case class ConsoleSize(width: Int, height: Int)
 /**
  * A widget that renders via ANSI codes to a location on the string.
  */
-abstract class Widget(pos: ConsolePosition) {
+abstract class Widget(val pos: ConsolePosition) {
+  /** An ANSI widget should render its content here. Note: This method is responsible for moving the cursor
+    * and writing the text at the appropriate locations.
+    */
   protected def content: String
+  /** A string that can be written to the console which will save the cursor position and restore it. */
   def renderString: String =
-    s"${Ansi.SAVE_CURSOR_POSITION}${Ansi.MOVE_CURSOR(pos.row, pos.col)}$content${Ansi.RESTORE_CURSOR_POSITION}"
+    s"${Ansi.SAVE_CURSOR_POSITION}$content${Ansi.RESTORE_CURSOR_POSITION}"
 }
 
 // A dummy test widget that dumps logs intoa  fixed position on the screen in a thread.
@@ -49,6 +53,14 @@ class TestLogWidget extends Thread("test-log-widget") {
 }
 
 
+/** This is an ANSI widget which contains a ring buffer of log messages to render.
+  *
+  *
+  * @param pos  THe position on the terminal for this widget
+  * @param size  THe size of the widget
+  *
+  * Note: currently the widget system does not handle console resizes.
+  */
 class LogWidget(pos: ConsolePosition, size: ConsoleSize) extends Widget(pos) {
   private val buf = new RingArray[String](size.height)
   // Note - Lines are auto truncated...
@@ -78,14 +90,23 @@ class LogWidget(pos: ConsolePosition, size: ConsoleSize) extends Widget(pos) {
 }
 
 
-// Hacky implementation of a ring array
+/**
+ * Hacky implementation of a mutable ring array.
+ * @param buffer  The ring array buffer
+ * @param start0  THe starting location in the buffer for data
+ * @param size0   The number of elements in the array.
+ * @tparam T      The type of data in the array.
+ */
 class RingArray[T: ClassTag] private (buffer: Array[T], start0: Int = 0, size0: Int = 0) {
   private var start: Int = start0
   private var mySize: Int = size0
+  /** The number of elements in the arary. */
   def length: Int = mySize
+  /** Grabs the element at a given index. */
   def apply(idx: Int): T =
     if(idx >= mySize) throw new IndexOutOfBoundsException(s"$idx is outside of range (0, $mySize)")
     else buffer(realIdx(idx)).asInstanceOf[T]
+  /** Appends another element into the array.  If the max size is reached, this deletes the last element in. */
   def append(el: T): this.type = {
       if(mySize < buffer.length) {
       buffer(realIdx(start + mySize)) = el
@@ -96,6 +117,7 @@ class RingArray[T: ClassTag] private (buffer: Array[T], start0: Int = 0, size0: 
     }
     this
   }
+  /** An iterator over elements in the array. */
   def iterator: Iterator[T] = new Iterator[T] {
     private var current = 0
     private var startSize = mySize
@@ -107,6 +129,6 @@ class RingArray[T: ClassTag] private (buffer: Array[T], start0: Int = 0, size0: 
 
   }
   private def realIdx(idx: Int): Int = (start + idx) % buffer.length
-  /** Helper method to construct the ring array froma  size. */
+  /** Helper method to construct the ring array with specific buffer size. */
   def this(n: Int) = this(new Array[T](n), 0, 0)
 }
