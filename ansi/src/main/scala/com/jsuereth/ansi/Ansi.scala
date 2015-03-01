@@ -12,9 +12,10 @@ object Ansi {
   // Select graphic Rendition
   private def SGR(n: Int) = s"${CSI}${n}m"
 
+  /** The DSR escape, a.k.a. will put the current cursor position in System.in. */
+  val REPORT_CURSOR_POSITION = s"${CSI}6n"
   /** Moves the current cursor to the upper left of the terminal. */
   val MOVE_CURSOR_TO_UPPER_LEFT = s"${CSI}H"
-
   /** Moves the cusror up, N rows */
   def MOVE_CURSOR_UP(n: Int) = s"${CSI}${n}A"
   /** Moves the cursor down N roows. */
