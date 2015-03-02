@@ -12,7 +12,6 @@ lazy val ansi =
 
 lazy val ansiui =
    project.settings(commonSettings:_*).dependsOn(ansi).settings(libraryDependencies += Deps.jansi)
-
 lazy val image =
   project.settings(commonSettings:_*).dependsOn(ansi)
 
@@ -42,4 +41,9 @@ lazy val examples =
     },
     mainClass in assembly := Some("examples.AsciiVideo"),
     assemblyJarName in assembly := "console-roll.jar"
+  )
+
+lazy val slideui =
+  project.settings(commonSettings:_*).dependsOn(ansiui, image, webcam).settings(
+    mainClass in assembly := Some("com.jsuereth.ansi.ui.TestUI")
   )

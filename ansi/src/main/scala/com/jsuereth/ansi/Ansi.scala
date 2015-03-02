@@ -30,6 +30,10 @@ object Ansi {
   val SAVE_CURSOR_POSITION = s"${CSI}s"
   /** Restores the cursor to the last save point. */
   val RESTORE_CURSOR_POSITION = s"${CSI}u"
+  /** Hides the cursor from being visible. */
+  val HIDE_CURSOR = s"${CSI}?25l"
+  /** Restores the cursor as visible. */
+  val SHOW_CURSOR = s"${CSI}?25h"
 
   /** Clears the screen from the cursor to the end of line. */
   val CLEAR_SCREEN_FROM_CURSOR_TO_END_OF_LINE = s"${CSI}0J"
