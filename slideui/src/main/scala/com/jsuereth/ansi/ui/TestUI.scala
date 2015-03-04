@@ -28,9 +28,6 @@ object TestUI {
   }
 
   private val latestEvent = frp.events.signal(KeyPress(0))
-
-
-
   // TODO - This may be too aggressive...
   private val subResize = frp.consoleSize foreach { change =>
     frp.renders += DisplayText(Ansi.CLEAR_SCREEN)}
@@ -48,13 +45,21 @@ object TestUI {
   }
 
   // Layout related items
-
   val webcamSize = frp.consoleSize map { r =>
-    ConsoleSize(r.cols/4, r.rows/2)
+    ConsoleSize(r.cols/3, r.rows - (r.rows/3))
   }
   val webcamLocation = frp.consoleSize map { r =>
-    ConsolePosition(0, r.cols - (r.cols/4))
+    ConsolePosition(0, r.cols - (r.cols/3))
   }
+
+  val slideControl = frp.events.collect {
+    case LeftKey() => PreviousSlide()
+    case RightKey() => NextSlide()
+    case UpKey() => FirstSlide()
+    case DownKey() => LastSlide()
+  }
+  val slides = new SlideWidget(frp.renders, slideControl)
+
 
   // Render latest event on the screen.
   private val sub3 = latestEvent foreach { key =>
@@ -69,13 +74,9 @@ object TestUI {
 
   def main(args: Array[String]): Unit = {
     implicit val system = ActorSystem("webcam-ascii-snap")
-    val webcam = com.jsuereth.video.WebCam.default(system)
+    // TODO - should we inline the webcam size/location?
+    val webcam = WebcamWidget.create(system, webcamSize, webcamLocation, frp.runnables)
     val settings = MaterializerSettings.create(system)
-    // TODO - Specify camera height/width.
-    // TODO - we need someway of enforcing backpressure on this stream.
-    val asciiRenderer = TerminalRenderActor.consumer(system)
-    webcam subscribe asciiRenderer
-    Source(webcam).runWith(Sink(asciiRenderer))(FlowMaterializer(settings))
     frp.run()
   }
 
@@ -84,54 +85,7 @@ object TestUI {
 
 
 
-  // This guy is pretty hacky, but so far it is accurately displaying the webcam in the top-right corner of the screen.
-  object TerminalRenderActor {
-    def consumer(factory: ActorRefFactory): Subscriber[VideoFrame] = {
-      val actor = factory.actorOf(Props(new TerminalRenderActor()))
-      ActorSubscriber(actor)
-    }
-  }
-  class TerminalRenderActor() extends ActorSubscriber {
-    override protected def requestStrategy: RequestStrategy = ZeroRequestStrategy
 
-    // Prime the pump.
-    request(1)
-    private case class RequestNextShot()
-
-    override def receive: Receive = {
-      case ActorSubscriberMessage.OnNext(VideoFrame(image, _, _)) =>
-        val me = self
-        val renderText = {
-          val currentSize = webcamSize()
-          val resized = com.jsuereth.image.Resizer.forcedScale(image, currentSize.width, currentSize.height)
-          val ascii = com.jsuereth.image.Ascii.toCharacterColoredAscii(resized)
-          val ConsolePosition(row, col) = webcamLocation()
-          // Here we render and the fire the next video request.
-          val lines =
-            for((line, idx) <- ascii.split("[\r\n]+").zipWithIndex) yield {
-              val y = row + idx
-              // TODO - Move the camera to the far right of the screen....
-              s"${Ansi.MOVE_CURSOR(y, col)}$line"
-            }
-          s"${Ansi.SAVE_CURSOR_POSITION}${lines.mkString("")}${Ansi.RESET_COLOR}${Ansi.RESTORE_CURSOR_POSITION}"
-        }
-        object FireNextRequestRunnable extends Runnable {
-          def run(): Unit = {
-            // TODO - Don't do it this way....
-            // Here we hackily dump right to System.out since we know we're running inside a runnable on the event loop, and it's safe to do so.
-            System.out.print(renderText)
-            // Tell the actor to request another camera shot.
-            me ! RequestNextShot()
-          }
-        }
-        frp.runnables += GenericRunnable(FireNextRequestRunnable)
-
-      case ActorSubscriberMessage.OnComplete =>
-      case ActorSubscriberMessage.OnError(e) =>
-      case RequestNextShot() => request(1)
-    }
-
-  }
 
 
 }
