@@ -21,11 +21,46 @@ object SlideWidget {
       s"""
           |  ${Ansi.BOLD} A Whirlwind Tour${Ansi.RESET_COLOR}
           |  ${Ansi.ITALIC}of the ${Ansi.RED}Scala${Ansi.RESET_COLOR}${Ansi.ITALIC} Ecosystem${Ansi.RESET_COLOR}
-          |                                                                             """.stripMargin,
+          |""".stripMargin,
       s"""
-          |${Ansi.BOLD}Test SLIDE${Ansi.RESET_COLOR}
-          |* Some ${Ansi.RED}Stuff${Ansi.RESET_COLOR}
-          |* Some more stuff                                    """.stripMargin,
+          |${Ansi.BOLD}Agenda${Ansi.RESET_COLOR}
+          |* The core ${Ansi.RED}Scala${Ansi.RESET_COLOR} libraries
+          |* The ${Ansi.CYAN}early wave${Ansi.RESET_COLOR} of libraries
+          |* Up and coming
+          |* Tooling""".stripMargin,
+    s"""| --===  ${Ansi.BOLD}Core Scala${Ansi.RESET_COLOR} ==--
+        |
+        |* Standard Library
+        |  - Collections
+        |  - Futures
+        |  - Option, Try
+        |  - Process
+        |* Modules
+        |  - Actors
+        |  - Parser Combinators
+        |  - XML
+     """.stripMargin,
+      s"""| --===  ${Ansi.BOLD}The early wave${Ansi.RESET_COLOR} ==--
+          |
+          |* Akka, Spray
+          |* Lift
+          |* Unfiltered
+          |* Dispatch
+          |* Scalaz
+          |* Play
+          |* Spire
+          |* Scalatest, Specs, Scalacheck
+          |* sbt
+     """.stripMargin,
+      s"""| --===  ${Ansi.BOLD}Up and Coming${Ansi.RESET_COLOR} ==--
+        |
+        |* Spark
+        |* Akka Streams, Akka Http
+        |* Reactive Collections
+        |* cats, algebra, etc.
+        |* Scalaz-Streams
+        | - TODO - more
+        """.stripMargin,
       s"""
           |
           |              FIN
@@ -56,10 +91,11 @@ class SlideWidget(renders: Reactive.Emitter[DisplayText], control: Reactive[Slid
   // TODO - we need to resize the slide so that it covers the entire area we own....
   private val currentSlide = currentSlideIdx map { idx => slides(idx) }
 
-  private val renderedSlide = currentSlide map { case slide =>
+
+  private val renderedSlide = (currentSlide zip size) { case (slide, s) =>
     val lines = slide.split("[\r\n]+")
-    val maxHeight = size().height
-    val maxWidth = size().width
+    val maxHeight = s.height
+    val maxWidth = s.width
     import Padding._
     val padded: Seq[String] = for(line <- lines) yield {
       val realSize = new AnsiString(line).length
