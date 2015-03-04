@@ -18,6 +18,8 @@ case class RightKey() extends Event
 case class LeftKey() extends Event
 /** The cursor position being fired down. */
 case class CursorPosition(row: Int, col: Int) extends Event
+/** The size of the console changed. */
+case class ConsoleResize(rows: Int, cols: Int) extends Event
 
 
 case class UnknownAnsiCode(code: String) extends Event

@@ -16,15 +16,24 @@ object Ascii {
 
   /** Convert an image to foreground colored ascii characters. */
   def toCharacterColoredAscii(image: BufferedImage): String =
-    toAscii(image, Ansi.FOREGROUND_COLOR, x => chooseAsciiChar(x).toString)
+    toAscii(image, Ansi.FOREGROUND_COLOR, x => chooseAsciiChar(x))
+
+  /** Convert an image to foreground colored ascii characters. */
+  def toCharacterColoredAscii2x(image: BufferedImage): String =
+    toAscii(image, Ansi.FOREGROUND_COLOR, { x =>
+      val c = chooseAsciiChar(x)
+      s"$c$c"
+    })
 
   /** Converts an image to raw ascii characters (no color) by intensity. */
   def toRawAscii(image: BufferedImage): String =
-    toAscii(image, _ => "", x => chooseAsciiChar(x).toString)
+    toAscii(image, _ => "", x => chooseAsciiChar(x))
 
 
   def toCharacterColoredHtml(image: BufferedImage): String =
-    toHtml(image, x => chooseAsciiChar(x).toString)
+    toHtml(image, x => chooseAsciiChar(x))
+
+
 
 
   // Note:  Borrowed from // Note: This is borrowed from https://github.com/cb372/scala-ascii-art/blob/master/src/main/scala/com/github/cb372/asciiart/Asciifier.scala
@@ -35,14 +44,14 @@ object Ascii {
 
 
   /** Converts a color to an ascii character based on its intensity. */
-  def chooseAsciiChar(color: Color, intensityPallete: Array[Char] = darkBackgroundIntensityPallet) = {
+  def chooseAsciiChar(color: Color, intensityPallete: Array[Char] = darkBackgroundIntensityPallet): String = {
     def rgbMax =
       math.max(color.getRed, math.max(color.getGreen, color.getBlue))
     rgbMax match {
-      case 0 => intensityPallete.last
+      case 0 => intensityPallete.last.toString
       case n => {
         val index = ((intensityPallete.length * (rgbMax.toFloat / 255)) - (0.5)).toInt
-        intensityPallete(index)
+        intensityPallete(index).toString
       }
     }
   }

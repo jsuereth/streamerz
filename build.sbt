@@ -11,7 +11,7 @@ lazy val ansi =
   project.settings(commonSettings:_*)
 
 lazy val ansiui =
-   project.settings(commonSettings:_*).dependsOn(ansi).settings(libraryDependencies += Deps.jansi)
+   project.settings(commonSettings:_*).dependsOn(ansi).settings(libraryDependencies ++= Seq(Deps.jansi, Deps.reactiveCollections))
 lazy val image =
   project.settings(commonSettings:_*).dependsOn(ansi)
 
@@ -45,5 +45,6 @@ lazy val examples =
 
 lazy val slideui =
   project.settings(commonSettings:_*).dependsOn(ansiui, image, webcam).settings(
-    mainClass in assembly := Some("com.jsuereth.ansi.ui.TestUI")
+    mainClass in assembly := Some("com.jsuereth.ansi.ui.TestUI"),
+    libraryDependencies += Deps.scalaCompiler.value
   )

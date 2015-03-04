@@ -47,10 +47,13 @@ class DefaultUILoop(dispatcher: EventDispatcher, console: java.io.Console = Syst
 
 
   override def run(): Unit = {
+    // Note - These two lines imply we should be using jline or something to be windows friendly.  For now we don't care.
     Stty.disableEcho()
     Stty.bufferByCharacter()
 
-    // REgister a restoration hook.
+    // Register a restoration hook.
+    // TODO - Better mechanism for this, including a way to remove shutdown hook if required.
+    ///       Possibly also, just issuing some kind of reset call.
     object EnableEcho extends Thread {
       override def run(): Unit =
         Stty.enableEcho()
@@ -61,12 +64,18 @@ class DefaultUILoop(dispatcher: EventDispatcher, console: java.io.Console = Syst
     val inputReader = new InputReadingThread(this)
     inputReader.start()
 
+    // Start by clearing the screen.
+    println(s"${Ansi.CLEAR_SCREEN}${Ansi.MOVE_CURSOR_TO_UPPER_LEFT}")
 
     // TODO - for the event loop, we may want to additionally check to see if the terminal has resized and fire that event.
-    def loop(): Unit =
+    def loop(): Unit = {
+      // TODO - we should be constantly reading the clock and checking for size changes...
+      ConsoleSizeDetector.check()
+      // TODO - we want a take-within, so we can still detect console size changes...
       events.take() match {
         case e => process(e); loop()
       }
+    }
     loop()
   }
   def process(e: UILoopItem): Unit = {
@@ -77,9 +86,37 @@ class DefaultUILoop(dispatcher: EventDispatcher, console: java.io.Console = Syst
       case DisplayText(text) =>
         //  Display text right now.  Should we flush?
         stdout.print(text)
+      // We assume this is a size event.
+      case CursorPosition(row, col) =>
+        ConsoleSizeDetector.report(row,col)
       case e: Event =>
         dispatcher.dispatch(e)
+    }
+  }
 
+
+  object ConsoleSizeDetector {
+    private val RIDICULOUS_SIZE=60000
+    private val CONSOLE_CHECK_SIZE = s"${Ansi.SAVE_CURSOR_POSITION}${Ansi.MOVE_CURSOR(RIDICULOUS_SIZE, RIDICULOUS_SIZE)}${Ansi.REPORT_CURSOR_POSITION}${Ansi.RESTORE_CURSOR_POSITION}"
+    private var lastCheck = 0L
+    private var lastRows = 0
+    private var lastCols = 0
+    private val CHECK_DELAY = 1000L
+
+    def check(): Unit = {
+      val now = System.currentTimeMillis
+      if(now > (lastCheck + CHECK_DELAY)) {
+        stdout.print(CONSOLE_CHECK_SIZE)
+        lastCheck = System.currentTimeMillis()
+      }
+    }
+    def report(row: Int, col: Int): Unit = {
+      if((row != lastRows) || (col != lastCols)) {
+        // TODO - Fire event
+        dispatcher.dispatch(ConsoleResize(row, col))
+        lastRows = row
+        lastCols = col
+      }
     }
   }
 }
