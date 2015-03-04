@@ -35,9 +35,10 @@ object TestUI {
   // Our current text to display as size.
   val sizeText = frp.consoleSize map { size =>
     val text = s"${size.cols} x ${size.rows}"
-    val x = (size.cols - text.length)-1
+    val x = (size.cols - 20)
     val y = size.rows - 1
-    s"${Ansi.SAVE_CURSOR_POSITION}${Ansi.MOVE_CURSOR(y,x)}$text${Ansi.RESTORE_CURSOR_POSITION}"
+    val pad = Padding.pad(20-text.length)
+    s"${Ansi.SAVE_CURSOR_POSITION}${Ansi.MOVE_CURSOR(y,x)}$pad$text${Ansi.RESTORE_CURSOR_POSITION}"
     //s"$text"
   }
   private val sub2 = sizeText foreach { s =>
@@ -58,17 +59,19 @@ object TestUI {
     case UpKey() => FirstSlide()
     case DownKey() => LastSlide()
   }
-  val slides = new SlideWidget(frp.renders, slideControl)
+  val slideSize = frp.consoleSize map { r => ConsoleSize(r.cols - (r.cols/3), r.rows)}
+  val slides = new SlideWidget(frp.renders, slideControl, slideSize)
 
 
   // Render latest event on the screen.
   private val sub3 = latestEvent foreach { key =>
     val size = frp.consoleSize()
     val y = size.rows-2
-    val text = key.toString
-    val x = size.cols - (text.length + 2)
+    val text = key.toString.take(20)
+    val x = size.cols - 20
+    val pad = Padding.pad(20-text.length)
     // TODO - minimum size and fill w/ spaces to avoid having to re-redner.
-    frp.renders += DisplayText(s"${Ansi.SAVE_CURSOR_POSITION}${Ansi.MOVE_CURSOR(y, x)}  $text${Ansi.RESTORE_CURSOR_POSITION}")
+    frp.renders += DisplayText(s"${Ansi.SAVE_CURSOR_POSITION}${Ansi.MOVE_CURSOR(y, x)}$pad$text${Ansi.RESTORE_CURSOR_POSITION}")
   }
 
 
