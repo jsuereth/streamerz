@@ -38,7 +38,9 @@ class AnsiSerializer extends Visitor {
     // TODO - unsupported in ANSI, allow or errors?
     buf.append(link(node.getText))
   }
-  override def visit(node: VerbatimNode): Unit = ???
+  override def visit(node: VerbatimNode): Unit = {
+    buf.append(node.getText)
+  }
   override def visit(node: TableRowNode): Unit = ???
   override def visit(node: TableNode): Unit = ???
   override def visit(node: TableHeaderNode): Unit = ???

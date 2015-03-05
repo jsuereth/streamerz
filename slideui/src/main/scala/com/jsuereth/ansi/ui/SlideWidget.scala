@@ -3,6 +3,7 @@ package com.jsuereth.ansi.ui
 import java.awt.Color
 
 import com.jsuereth.ansi.Ansi
+import com.jsuereth.ansi.markdown.MarkdownToAnsi
 import org.fusesource.jansi.AnsiString
 
 import scala.reactive.{Signal, Reactive}
@@ -21,7 +22,18 @@ object SlideWidget {
   private val B = s"${Ansi.FOREGROUND_COLOR(Color.GRAY)}*${Ansi.RESET_COLOR}"
   private val D = s"${Ansi.FOREGROUND_COLOR(Color.GRAY)}-${Ansi.RESET_COLOR}"
   // TODO - Implement
-  def loadSlides() =
+  def loadSlides(directory: java.io.File = new java.io.File("slides/whirlwind-tour-scala-ecosystem")): Seq[String] = {
+    val files = Option(directory.listFiles()).getOrElse(Array.empty[java.io.File]).filter(_.getName endsWith ".md").sortBy(_.getName)
+    files map { f =>
+      val s = scala.io.Source.fromFile(f)
+      val contents =
+        try s.getLines.mkString("\n")
+        finally s.close()
+      MarkdownToAnsi.convert(contents)
+    }
+  }
+
+  /*
     Seq(
       s"""
           |  ${Ansi.BOLD} A Whirlwind Tour${Ansi.RESET_COLOR}
@@ -85,6 +97,7 @@ object SlideWidget {
           |
           |                                             """.stripMargin
     )
+    */
 }
 
 class SlideWidget(renders: Reactive.Emitter[DisplayText], control: Reactive[SlideControlEvent], size: Signal[ConsoleSize]) {
