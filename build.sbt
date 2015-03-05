@@ -10,6 +10,11 @@ val commonSettings: Seq[Setting[_]] = Seq(
 lazy val ansi =
   project.settings(commonSettings:_*)
 
+lazy val ansimarkdown =
+  project.settings(commonSettings:_*).dependsOn(ansi).settings(
+    libraryDependencies ++= Seq(Deps.pegdown)
+  )
+
 lazy val ansiui =
    project.settings(commonSettings:_*).dependsOn(ansi).settings(libraryDependencies ++= Seq(Deps.jansi, Deps.reactiveCollections))
 lazy val image =
@@ -44,7 +49,7 @@ lazy val examples =
   )
 
 lazy val slideui =
-  project.settings(commonSettings:_*).dependsOn(ansiui, image, webcam).settings(
+  project.settings(commonSettings:_*).dependsOn(ansiui, image, webcam, ansimarkdown).settings(
     mainClass in assembly := Some("com.jsuereth.ansi.ui.TestUI"),
     libraryDependencies += Deps.scalaCompiler.value
   )

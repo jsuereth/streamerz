@@ -11,4 +11,5 @@ object Deps {
   val scalaReflect = Def.setting { "org.scala-lang" % "scala-reflect" % scalaVersion.value }
   val scalaCompiler = Def.setting { "org.scala-lang" % "scala-compiler" % scalaVersion.value }
   val reactiveCollections = "com.storm-enroute" %% "reactive-collections" % "0.5"
+  val pegdown = "org.pegdown" % "pegdown" % "1.5.0"
 }

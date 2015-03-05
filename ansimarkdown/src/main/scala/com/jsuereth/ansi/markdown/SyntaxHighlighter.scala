@@ -1,5 +1,6 @@
-package com.jsuereth.ansi
-package ui
+package com.jsuereth.ansi.markdown
+
+import com.jsuereth.ansi.Ansi
 
 import scala.util.matching.Regex
 
