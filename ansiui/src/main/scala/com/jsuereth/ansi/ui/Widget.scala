@@ -3,12 +3,17 @@ package com.jsuereth.ansi.ui
 import java.awt.Color
 
 import com.jsuereth.ansi.Ansi
+import com.jsuereth.ansi.ui.frp.layout.{ConsoleSize, ConsolePosition}
 import org.fusesource.jansi.AnsiString
 
 import scala.reflect.ClassTag
 
-case class ConsolePosition(row: Int, col: Int)
-case class ConsoleSize(width: Int, height: Int)
+
+
+
+
+
+
 
 /**
  * A widget that renders via ANSI codes to a location on the string.

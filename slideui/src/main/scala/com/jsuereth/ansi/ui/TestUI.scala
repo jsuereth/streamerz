@@ -5,11 +5,14 @@ import akka.stream.{FlowMaterializer, MaterializerSettings}
 import akka.stream.actor._
 import akka.stream.scaladsl.{Sink, Source}
 import com.jsuereth.ansi.ui.frp.FrpConsoleUI
+import com.jsuereth.ansi.ui.frp.layout._
 import com.jsuereth.ansi.{AnsiTerminal, Ansi}
 import com.jsuereth.image.Ascii
 import com.jsuereth.video.{VideoFrame, AsciiVideoFrame}
 import org.fusesource.jansi.{AnsiString}
 import org.reactivestreams.Subscriber
+
+import scala.reactive.Signal
 
 /**
  * Created by jsuereth on 3/1/15.
@@ -45,13 +48,31 @@ object TestUI {
     frp.renders += DisplayText(s)
   }
 
-  // Layout related items
-  val webcamSize = frp.consoleSize map { r =>
-    ConsoleSize(r.cols/3, r.rows - (r.rows/3))
+
+  // TODO - this isn't very good
+
+  lazy val webcamVisible: Signal[VisibleFlag] = {
+    val keyPress = frp.events.collect {
+      case KeyPress('c') => Visible
+      case KeyPress('C') => NotVisible
+    }
+    keyPress.signal(Visible)
   }
-  val webcamLocation = frp.consoleSize map { r =>
-    ConsolePosition(0, r.cols - (r.cols/3))
-  }
+  val completeLayout: Signal[SlideUILayout] =
+    (frp.consoleSize zip webcamVisible) { (s, wcv) =>
+      val startingLayout = ConsoleLayout(ConsolePosition(1,1), ConsoleSize(width = s.cols, height = s.rows-3), Visible)
+      System.err.println(s"Console Resize: $startingLayout")
+      val layout =
+      if(wcv.value) {
+        val (slides, right) = Layouts.horizontalSplit(startingLayout, 0.7f)
+        val (camera, ignore) = Layouts.verticalSplit(right)
+        SlideUILayout(camera, slides)
+      } else SlideUILayout(ConsoleLayout.empty, startingLayout)
+      System.err.println(layout)
+      layout
+    }
+
+  val webcamLayout = completeLayout.map(_.camera)
 
   val slideControl = frp.events.collect {
     case LeftKey() => PreviousSlide()
@@ -59,17 +80,17 @@ object TestUI {
     case UpKey() => FirstSlide()
     case DownKey() => LastSlide()
   }
-  val slideSize = frp.consoleSize map { r => ConsoleSize(r.cols - (r.cols/3), r.rows)}
-  val slides = new SlideWidget(frp.renders, slideControl, slideSize)
+  val slideLayout = completeLayout.map(_.slides)
+  val slides = new SlideWidget(frp.renders, slideControl, slideLayout)
 
 
   // Render latest event on the screen.
   private val sub3 = latestEvent foreach { key =>
     val size = frp.consoleSize()
     val y = size.rows-2
-    val text = key.toString.take(20)
-    val x = size.cols - 20
-    val pad = Padding.pad(20-text.length)
+    val text = key.toString.take(25)
+    val x = size.cols - 25
+    val pad = Padding.pad(25-text.length)
     // TODO - minimum size and fill w/ spaces to avoid having to re-redner.
     frp.renders += DisplayText(s"${Ansi.SAVE_CURSOR_POSITION}${Ansi.MOVE_CURSOR(y, x)}$pad$text${Ansi.RESTORE_CURSOR_POSITION}")
   }
@@ -78,17 +99,19 @@ object TestUI {
   def main(args: Array[String]): Unit = {
     implicit val system = ActorSystem("webcam-ascii-snap")
     // TODO - should we inline the webcam size/location?
-    val webcam = WebcamWidget.create(system, webcamSize, webcamLocation, frp.runnables)
+    val webcam = WebcamWidget.create(system, webcamLayout, frp.runnables)
     val settings = MaterializerSettings.create(system)
     frp.run()
   }
-
-
-
-
-
-
-
-
-
+}
+// TODO - define all widgets we render.
+case class SlideUILayout(
+  camera: ConsoleLayout,
+  slides: ConsoleLayout
+) {
+  override def toString =
+    s"""Layout {
+       |  camera: ${camera}
+       |  slides: ${slides}
+       |}""".stripMargin
 }

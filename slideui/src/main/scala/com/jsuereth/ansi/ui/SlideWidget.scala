@@ -4,6 +4,7 @@ import java.awt.Color
 
 import com.jsuereth.ansi.Ansi
 import com.jsuereth.ansi.markdown.MarkdownToAnsi
+import com.jsuereth.ansi.ui.frp.layout.{ConsoleLayout, ConsoleSize}
 import org.fusesource.jansi.AnsiString
 
 import scala.reactive.{Signal, Reactive}
@@ -100,7 +101,7 @@ object SlideWidget {
     */
 }
 
-class SlideWidget(renders: Reactive.Emitter[DisplayText], control: Reactive[SlideControlEvent], size: Signal[ConsoleSize]) {
+class SlideWidget(renders: Reactive.Emitter[DisplayText], control: Reactive[SlideControlEvent], layout: Signal[ConsoleLayout]) {
   val slides = SlideWidget.loadSlides()
 
   val (setSlide, currentSlideIdx) = {
@@ -123,17 +124,22 @@ class SlideWidget(renders: Reactive.Emitter[DisplayText], control: Reactive[Slid
   private val currentSlide = currentSlideIdx map { idx => slides(idx) }
 
 
-  private val renderedSlide = (currentSlide zip size) { case (slide, s) =>
+  private val renderedSlide = (currentSlide zip layout) { case (slide, l) =>
     val lines = slide.split("[\r\n]+")
-    val maxHeight = s.height
-    val maxWidth = s.width
+    val maxHeight = l.size.height
+    val maxWidth = l.size.width
     import Padding._
     val padded: Seq[String] = for(line <- lines) yield {
       val realSize = new AnsiString(line).length
       if(realSize < maxWidth) s"$line${pad(maxWidth - realSize)}"
       else line
     }
-    (padded ++ padLines(maxHeight - lines.length, maxWidth)).mkString("\n")
+    val relocated =
+      for((line, idx) <- (padded ++ padLines(maxHeight - lines.length, maxWidth)).zipWithIndex) yield {
+        val row = l.pos.row + idx
+        s"${Ansi.MOVE_CURSOR(row, l.pos.col)}$line"
+      }
+    relocated.mkString("")
   }
 
   private val renderSub = renderedSlide foreach { s =>

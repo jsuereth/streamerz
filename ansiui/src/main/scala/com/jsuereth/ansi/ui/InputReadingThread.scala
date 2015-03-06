@@ -48,12 +48,19 @@ private[ui] class InputReadingThread(e: MainUILoop, in: java.io.Console = System
           case "B" => DownKey()
           case "C" => RightKey()
           case "D" => LeftKey()
+          case "F" => End()
+          case "H" => Home()
+
           case CursorPositionExcape(row, col) => CursorPosition(row.toInt,col.toInt)
           case s => UnknownAnsiCode(s)
         }
       // TODO - This means escape was pressed.  Here we don't want to consume the n, we just want to
         // fire the ESC and then read the n.
+      case n if (n >= 64) && (n <= 95) =>
+        UnknownEscape(n)
+        // TODO - A timeout for this, so we can know just ESC was pressed.
       case n =>
+        // Here, we may be able to assume 'alt' was held before typign the character, as it's a known thing linux terminals do.
         e.fire(DisplayText(s"Expected esacpe code, found char $n"))
         // TODO - ??? we need to expand our handling of keys.
         sys.error(s"Expecting escape code, found $n")
