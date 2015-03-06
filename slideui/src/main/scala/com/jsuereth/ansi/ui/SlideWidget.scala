@@ -4,7 +4,7 @@ import java.awt.Color
 
 import com.jsuereth.ansi.Ansi
 import com.jsuereth.ansi.markdown.MarkdownToAnsi
-import com.jsuereth.ansi.ui.frp.layout.{ConsoleLayout, ConsoleSize}
+import com.jsuereth.ansi.ui.frp.layout.{Padding, ConsoleLayout, ConsoleSize}
 import org.fusesource.jansi.AnsiString
 
 import scala.reactive.{Signal, Reactive}

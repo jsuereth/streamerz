@@ -1,4 +1,4 @@
-package com.jsuereth.ansi.ui
+package com.jsuereth.ansi.ui.frp.layout
 
 /**
  * Whitespace padding helper methods.

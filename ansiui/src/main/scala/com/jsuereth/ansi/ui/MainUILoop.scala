@@ -65,7 +65,7 @@ class DefaultUILoop(dispatcher: EventDispatcher, console: java.io.Console = Syst
     inputReader.start()
 
     // Start by clearing the screen.
-    println(s"${Ansi.CLEAR_SCREEN}${Ansi.MOVE_CURSOR_TO_UPPER_LEFT}")
+    println(s"${Ansi.CLEAR_SCREEN}${Ansi.MOVE_CURSOR_TO_UPPER_LEFT}${Ansi.HIDE_CURSOR}")
 
     // TODO - for the event loop, we may want to additionally check to see if the terminal has resized and fire that event.
     def loop(): Unit = {

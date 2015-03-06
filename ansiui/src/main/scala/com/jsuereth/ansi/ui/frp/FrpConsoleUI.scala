@@ -3,7 +3,10 @@ package ui
 package frp
 
 import java.util.TimerTask
+import com.jsuereth.ansi.ui.frp.layout.{Padding, ConsoleLayout}
+import org.fusesource.jansi.AnsiString
 
+import scala.reactive.Reactive.Subscription
 import scala.reactive.{Signal, Reactive}
 
 /**
@@ -46,4 +49,27 @@ final class FrpConsoleUI {
 
   /** Takes ownership of the current thread and starts running the UI. */
   def run(): Unit = mainEventLoop.run()
+
+
+  /** Constructs a text label using a signal for the string, and the given layout object. */
+  def label(text: Signal[String], layout: Signal[ConsoleLayout]): Signal[Unit] with Subscription = {
+    // TODO - Allow labels to be left/right/centered
+    (text zip layout) { (t, l) =>
+      val lines = t.split("[\r\n]+").take(l.size.height)
+      val padLines = Padding.padLines(l.size.height-lines.length, l.size.width)
+      val renderable =
+        for((line, idx) <- (padLines ++ lines).zipWithIndex) yield {
+          val realSize = new AnsiString(line).length
+          val col = l.pos.col
+          val row = l.pos.row + idx
+          val pad = Padding.pad(l.size.width - realSize)
+          // TODO - Truncate length
+          val padded = s"$pad$line"
+          s"${Ansi.MOVE_CURSOR(row, col)}${Ansi.RESET_COLOR}$padded"
+        }
+      renders += DisplayText(s"${Ansi.SAVE_CURSOR_POSITION}${renderable.mkString("")}${Ansi.RESTORE_CURSOR_POSITION}")
+    }
+
+  }
+
 }

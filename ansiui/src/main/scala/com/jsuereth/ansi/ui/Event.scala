@@ -39,6 +39,7 @@ abstract class SpecialKey(key: Int) {
 object Backspace extends SpecialKey(127)
 object Enter extends SpecialKey(10)
 object Tab extends SpecialKey(9)
+object Space extends SpecialKey(32)
 
 
 
