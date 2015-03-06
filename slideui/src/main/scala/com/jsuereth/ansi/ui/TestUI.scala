@@ -51,23 +51,38 @@ object TestUI {
 
   // TODO - this isn't very good
 
-  lazy val webcamVisible: Signal[VisibleFlag] = {
+  lazy val slideUiState: Signal[SlideUiState] = {
     val keyPress = frp.events.collect {
-      case KeyPress('c') => Visible
-      case KeyPress('C') => NotVisible
+      case End() =>
+        slideUiState() match {
+          case FullScreenCamera => SlidesAndCamera
+          case FullScreenSlides => FullScreenSlides
+          case SlidesAndCamera => FullScreenSlides
+        }
+      case Home() =>
+        slideUiState() match {
+          case FullScreenCamera => FullScreenCamera
+          case SlidesAndCamera => FullScreenCamera
+          case FullScreenSlides => SlidesAndCamera
+        }
     }
-    keyPress.signal(Visible)
+    keyPress.signal(SlidesAndCamera)
   }
   val completeLayout: Signal[SlideUILayout] =
-    (frp.consoleSize zip webcamVisible) { (s, wcv) =>
+    (frp.consoleSize zip slideUiState) { (s, wcv) =>
       val startingLayout = ConsoleLayout(ConsolePosition(1,1), ConsoleSize(width = s.cols, height = s.rows-3), Visible)
       System.err.println(s"Console Resize: $startingLayout")
       val layout =
-      if(wcv.value) {
-        val (slides, right) = Layouts.horizontalSplit(startingLayout, 0.7f)
-        val (camera, ignore) = Layouts.verticalSplit(right)
-        SlideUILayout(camera, slides)
-      } else SlideUILayout(ConsoleLayout.empty, startingLayout)
+        slideUiState() match {
+          case SlidesAndCamera =>
+            val (slides, right) = Layouts.horizontalSplit(startingLayout, 0.7f)
+            val (camera, ignore) = Layouts.verticalSplit(right)
+            SlideUILayout(camera, slides)
+          case FullScreenCamera =>
+            SlideUILayout(startingLayout, ConsoleLayout.empty)
+          case FullScreenSlides =>
+            SlideUILayout(ConsoleLayout.empty, startingLayout)
+        }
       System.err.println(layout)
       layout
     }
@@ -115,3 +130,7 @@ case class SlideUILayout(
        |  slides: ${slides}
        |}""".stripMargin
 }
+sealed trait SlideUiState
+case object FullScreenCamera extends SlideUiState
+case object FullScreenSlides extends SlideUiState
+case object SlidesAndCamera extends SlideUiState
