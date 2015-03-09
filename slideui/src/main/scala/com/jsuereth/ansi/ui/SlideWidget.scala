@@ -2,10 +2,9 @@ package com.jsuereth.ansi.ui
 
 import java.awt.Color
 
-import com.jsuereth.ansi.Ansi
+import com.jsuereth.ansi.{AnsiStringUtils, Ansi}
 import com.jsuereth.ansi.markdown.MarkdownToAnsi
-import com.jsuereth.ansi.ui.frp.layout.{Padding, ConsoleLayout, ConsoleSize}
-import org.fusesource.jansi.AnsiString
+import com.jsuereth.ansi.ui.frp.layout.{Padding, ConsoleLayout}
 
 import scala.reactive.{Signal, Reactive}
 
@@ -130,7 +129,7 @@ class SlideWidget(renders: Reactive.Emitter[DisplayText], control: Reactive[Slid
     val maxWidth = l.size.width
     import Padding._
     val padded: Seq[String] = for(line <- lines) yield {
-      val realSize = new AnsiString(line).length
+      val realSize = AnsiStringUtils.realLength(line)
       if(realSize < maxWidth) s"$line${pad(maxWidth - realSize)}"
       else line
     }

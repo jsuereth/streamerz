@@ -2,10 +2,7 @@ package com.jsuereth.ansi
 package ui
 package frp
 
-import java.util.TimerTask
 import com.jsuereth.ansi.ui.frp.layout.{Padding, ConsoleLayout}
-import org.fusesource.jansi.AnsiString
-
 import scala.reactive.Reactive.Subscription
 import scala.reactive.{Signal, Reactive}
 
@@ -59,12 +56,13 @@ final class FrpConsoleUI {
       val padLines = Padding.padLines(l.size.height-lines.length, l.size.width)
       val renderable =
         for((line, idx) <- (padLines ++ lines).zipWithIndex) yield {
-          val realSize = new AnsiString(line).length
+          val escapes = AnsiStringUtils.delineateEscapes(line)
+          val realSize = (line.length - escapes.map(_.charLength).sum)
           val col = l.pos.col
           val row = l.pos.row + idx
           val pad = Padding.pad(l.size.width - realSize)
-          // TODO - Truncate length
-          val padded = s"$pad$line"
+          val realLine = AnsiStringUtils.truncate(line, l.size.width)
+          val padded = s"$pad$realLine"
           s"${Ansi.MOVE_CURSOR(row, col)}${Ansi.RESET_COLOR}$padded"
         }
       renders += DisplayText(s"${Ansi.SAVE_CURSOR_POSITION}${renderable.mkString("")}${Ansi.RESTORE_CURSOR_POSITION}")

@@ -16,7 +16,7 @@ lazy val ansimarkdown =
   )
 
 lazy val ansiui =
-   project.settings(commonSettings:_*).dependsOn(ansi).settings(libraryDependencies ++= Seq(Deps.jansi, Deps.reactiveCollections))
+   project.settings(commonSettings:_*).dependsOn(ansi).settings(libraryDependencies ++= Seq(Deps.reactiveCollections))
 lazy val image =
   project.settings(commonSettings:_*).dependsOn(ansi)
 

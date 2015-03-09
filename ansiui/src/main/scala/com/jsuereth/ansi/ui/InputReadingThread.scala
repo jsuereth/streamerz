@@ -40,6 +40,7 @@ private[ui] class InputReadingThread(e: MainUILoop, in: java.io.Console = System
 
   private def readEscapeSequence(): Event = {
     val CursorPositionExcape = new Regex("([0-9]+);([0-9]+)R")
+    // TODO - Timeout the read.
     in.reader.read() match {
       case '[' =>
         // TODO - We should consume until an ANSI terminator, and then check the code.
@@ -50,7 +51,6 @@ private[ui] class InputReadingThread(e: MainUILoop, in: java.io.Console = System
           case "D" => LeftKey()
           case "F" => End()
           case "H" => Home()
-
           case CursorPositionExcape(row, col) => CursorPosition(row.toInt,col.toInt)
           case s => UnknownAnsiCode(s)
         }

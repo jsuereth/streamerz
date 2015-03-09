@@ -2,9 +2,8 @@ package com.jsuereth.ansi.ui
 
 import java.awt.Color
 
-import com.jsuereth.ansi.Ansi
+import com.jsuereth.ansi.{AnsiStringUtils, Ansi}
 import com.jsuereth.ansi.ui.frp.layout.{ConsoleSize, ConsolePosition}
-import org.fusesource.jansi.AnsiString
 
 import scala.reflect.ClassTag
 
@@ -70,11 +69,11 @@ class LogWidget(pos: ConsolePosition, size: ConsoleSize) extends Widget(pos) {
   private val buf = new RingArray[String](size.height)
   // Note - Lines are auto truncated...
   def appendLine(logLine: String): Unit = {
-    val ansi = new AnsiString(logLine)
+    val realLength = AnsiStringUtils.realLength(logLine)
     // TODO - fill line to end of widget...
       val realLine =
-      if(ansi.length < size.width) {
-        val spaces = Seq.fill(size.width - ansi.length)(" ").mkString("")
+      if(realLength < size.width) {
+        val spaces = Seq.fill(size.width - realLength)(" ").mkString("")
         logLine + spaces
       } else logLine
 
