@@ -1,13 +1,15 @@
 package com.jsuereth.ansi.ui
 
+import java.util.concurrent.TimeUnit
+
 import akka.actor.{Props, ActorRefFactory, ActorSystem}
 import akka.stream.{FlowMaterializer, MaterializerSettings}
 import akka.stream.actor.{ActorSubscriberMessage, ZeroRequestStrategy, RequestStrategy, ActorSubscriber}
 import akka.stream.scaladsl.{Sink, Source}
 import com.jsuereth.ansi.Ansi
-import com.jsuereth.ansi.ui.frp.layout.{ConsolePosition, ConsoleLayout}
+import com.jsuereth.ansi.ui.frp.layout.{Visible, ConsolePosition, ConsoleLayout}
 import com.jsuereth.video.VideoFrame
-import org.reactivestreams.Subscriber
+import org.reactivestreams.{Subscription, Subscriber, Publisher}
 
 import scala.reactive.{Reactive, Signal}
 
@@ -15,7 +17,19 @@ import scala.reactive.{Reactive, Signal}
  * An FRP webcam widget.
  */
 object WebcamWidget {
-  def create(system: ActorSystem, layout: Signal[ConsoleLayout], executions: Reactive.Emitter[GenericRunnable]) = {
+
+  def createWebcam(system: ActorSystem, layout: Signal[ConsoleLayout], executions: Reactive.Emitter[GenericRunnable]) = {
+    val webcam = com.jsuereth.video.WebCam.default(system)
+    createGeneric(system, layout, executions, webcam)
+  }
+
+  // TODO - allow it to configure which video.
+  def createVideo(system: ActorSystem, layout: Signal[ConsoleLayout], executions: Reactive.Emitter[GenericRunnable]) = {
+    def rick = com.jsuereth.video.ffmpeg.readVideoFile(new java.io.File("rick.mp4"), system, playAudio = true)
+    createGeneric(system, layout, executions, rick)
+  }
+
+  def createGeneric(system: ActorSystem, layout: Signal[ConsoleLayout], executions: Reactive.Emitter[GenericRunnable], source: => Publisher[VideoFrame]) = {
     // This guy is pretty hacky, but so far it is accurately displaying the webcam in the top-right corner of the screen.
     object TerminalRenderActor {
       def consumer(factory: ActorRefFactory): Subscriber[VideoFrame] = {
@@ -27,7 +41,7 @@ object WebcamWidget {
       override protected def requestStrategy: RequestStrategy = ZeroRequestStrategy
       private var isVisble: Boolean = false
       // Prime the pump.
-      request(1)
+      //request(1)
       private case class RequestNextShot()
       private case class SetVisible(v: Boolean)
 
@@ -39,6 +53,8 @@ object WebcamWidget {
         }
       }
 
+      private var lastTick = 0L
+      private var last = System.currentTimeMillis()
 
       override def receive: Receive = {
         case SetVisible(value) =>
@@ -46,11 +62,12 @@ object WebcamWidget {
             if(!isVisble) request(1) // Start asking for more info
             isVisble = value
           }
-        case ActorSubscriberMessage.OnNext(VideoFrame(image, _, _)) =>
-          if(isVisble) {
+        case ActorSubscriberMessage.OnNext(VideoFrame(image, timeStamp, timeUnit)) =>
+          throttleToRealtime(timeStamp, timeUnit)
+          val currentLayout = layout()
+          if(currentLayout.visisble.value) {
             val me = self
             val renderText = {
-              val currentLayout = layout()
               val currentSize = currentLayout.size
               val resized = com.jsuereth.image.Resizer.forcedScale(image, currentSize.width, currentSize.height)
               val ascii = com.jsuereth.image.Ascii.toCharacterColoredAscii(resized)
@@ -80,15 +97,39 @@ object WebcamWidget {
         case RequestNextShot() => request(1)
       }
 
+
+      // TODO - put this somewhere more useful.
+      private def throttleToRealtime(frameTime: Long, tickUnit: TimeUnit) = {
+        // Here is some gunk to slow down rendering to the appropriate frame rate.
+        concurrent.blocking {
+          val tick = TimeUnit.NANOSECONDS.convert(frameTime, tickUnit)
+          val time = System.nanoTime()
+          // Ensure we aren't just starting off.
+          if((lastTick > 0L) && (lastTick < tick)) {
+            val diff = tick - lastTick
+            val endWait = last + diff
+            // TODO - we busy spin for now, forcing the thread somewhere else
+            // Maybe not the best way to do this.
+            while(System.nanoTime < endWait) {
+              val remaining = endWait - System.nanoTime
+              // TODO - we should measure the cost of each of these strategies instead of making it up on the fly.
+              val remainingMS = remaining / 1000000
+              if(remainingMS > 2) Thread.sleep(remainingMS, (remaining % 1000000).toInt)
+              else if (remaining > 1000) Thread.`yield`()
+              else ()  // Busy loop
+            }
+          }
+          lastTick = tick
+          last = System.nanoTime
+        }
+      }
+
     }
-    val webcam = com.jsuereth.video.WebCam.default(system)
     implicit val factory = system
     val settings = MaterializerSettings.create(system)
-    // TODO - Specify camera height/width.
-    // TODO - we need someway of enforcing backpressure on this stream.
     val asciiRenderer = TerminalRenderActor.consumer(system)
-    webcam subscribe asciiRenderer
-    Source(webcam).runWith(Sink(asciiRenderer))(FlowMaterializer(settings))
+
+    source subscribe asciiRenderer
   }
 }
 

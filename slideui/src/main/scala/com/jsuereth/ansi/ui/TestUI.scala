@@ -49,16 +49,20 @@ object TestUI {
           case FullScreenCamera => SlidesAndCamera
           case FullScreenSlides => FullScreenSlides
           case SlidesAndCamera => FullScreenSlides
+          case RickRoll => FullScreenCamera
         }
       case Home() =>
         slideUiState() match {
+          case RickRoll => FullScreenSlides
           case FullScreenCamera => FullScreenCamera
           case SlidesAndCamera => FullScreenCamera
           case FullScreenSlides => SlidesAndCamera
         }
+      case KeyPress(114) => RickRoll
     }
     keyPress.signal(SlidesAndCamera)
   }
+
   val completeLayout: Signal[SlideUILayout] =
     (frp.consoleSize zip slideUiState) { (s, wcv) =>
       val startingLayout = ConsoleLayout(ConsolePosition(1,1), ConsoleSize(width = s.cols, height = s.rows-3), Visible)
@@ -73,12 +77,15 @@ object TestUI {
             SlideUILayout(startingLayout, ConsoleLayout.empty)
           case FullScreenSlides =>
             SlideUILayout(ConsoleLayout.empty, startingLayout)
+          case RickRoll =>
+            SlideUILayout(ConsoleLayout.empty, ConsoleLayout.empty, startingLayout)
         }
       System.err.println(layout)
       layout
     }
 
   val webcamLayout = completeLayout.map(_.camera)
+  val rickLayout = completeLayout.map(_.rick)
 
   val slideControl = frp.events.collect {
     case Space() => NextSlide()
@@ -94,7 +101,9 @@ object TestUI {
   def main(args: Array[String]): Unit = {
     implicit val system = ActorSystem("webcam-ascii-snap")
     // TODO - should we inline the webcam size/location?
-    val webcam = WebcamWidget.create(system, webcamLayout, frp.runnables)
+    val webcam = WebcamWidget.createWebcam(system, webcamLayout, frp.runnables)
+    // TODO sync rick to realtime.
+    val rick = WebcamWidget.createVideo(system, rickLayout, frp.runnables)
     val settings = MaterializerSettings.create(system)
     frp.run()
   }
@@ -102,15 +111,18 @@ object TestUI {
 // TODO - define all widgets we render.
 case class SlideUILayout(
   camera: ConsoleLayout,
-  slides: ConsoleLayout
+  slides: ConsoleLayout,
+  rick: ConsoleLayout = ConsoleLayout.empty
 ) {
   override def toString =
     s"""Layout {
        |  camera: ${camera}
        |  slides: ${slides}
+       |  rick: ${rick}
        |}""".stripMargin
 }
 sealed trait SlideUiState
 case object FullScreenCamera extends SlideUiState
 case object FullScreenSlides extends SlideUiState
 case object SlidesAndCamera extends SlideUiState
+case object RickRoll extends SlideUiState

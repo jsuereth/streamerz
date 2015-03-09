@@ -49,7 +49,13 @@ lazy val examples =
   )
 
 lazy val slideui =
-  project.settings(commonSettings:_*).dependsOn(ansiui, image, webcam, ansimarkdown).settings(
+  project.settings(commonSettings:_*).dependsOn(ansiui, image, webcam, ansimarkdown, ffmpeg).settings(
     mainClass in assembly := Some("com.jsuereth.ansi.ui.TestUI"),
-    libraryDependencies += Deps.scalaCompiler.value
+    libraryDependencies += Deps.scalaCompiler.value,
+    assemblyMergeStrategy in assembly := {
+      case PathList("org", "xmlpull", xs @ _*)        => MergeStrategy.first
+      case x =>
+        val oldStrategy = (assemblyMergeStrategy in assembly).value
+        oldStrategy(x)
+    }
   )
