@@ -12,6 +12,8 @@ import org.pegdown.ast._
  */
 class AnsiSerializer extends Visitor {
   private val buf = new StringBuilder
+  private var indent = -1;
+
 
   private def link(text: String): String = s"${Ansi.UNDERLINE}${Ansi.BLUE}$text${Ansi.RESET_COLOR}"
   override def visit(node: AbbreviationNode): Unit = ???
@@ -19,6 +21,7 @@ class AnsiSerializer extends Visitor {
     node match {
       case color: AnsiColorNode =>
         color.getColorText match {
+          case "white" => buf.append(Ansi.WHITE)
           case "red" => buf.append(Ansi.RED)
           case "blue" => buf.append(Ansi.BLUE)
           case "green" => buf.append(Ansi.GREEN)
@@ -26,6 +29,7 @@ class AnsiSerializer extends Visitor {
           case "yellow" => buf.append(Ansi.YELLOW)
           case "magenta" => buf.append(Ansi.MAGENTA)
           case "reset" => buf.append(Ansi.RESET_COLOR)
+          case "black" => buf.append(Ansi.BLACK)
           case x =>
             System.err.println(s"Unknown ANSI color escape: [$x]")
             // Ignore codes we do not understand, and do not show them.
@@ -78,8 +82,11 @@ class AnsiSerializer extends Visitor {
       case 1 => buf.append(Ansi.BOLD)
       case _ => buf.append(Ansi.ITALIC)
     }
+    val startIdx = buf.length
     visitChildren(node)
-    buf.append(Ansi.RESET_COLOR).append("\n")
+    val length = AnsiStringUtils.realLength(buf.substring(startIdx))
+    val pad = Seq.fill(length)("-").mkString("")
+    buf.append(Ansi.RESET_COLOR).append(s"\n${Ansi.FOREGROUND_COLOR(Color.lightGray)}$pad${Ansi.RESET_COLOR}\n")
   }
   override def visit(node: ExpLinkNode): Unit = {
     //System.err.println(s"ExpLinkNode - $node, title = ${node.title}")
@@ -94,14 +101,17 @@ class AnsiSerializer extends Visitor {
   override def visit(node: CodeNode): Unit = {
     node.getText match {
       case code if code startsWith "scala" =>
-        buf.append(SyntaxHighlighter.ansiHighlight(code.drop(6)))
+        val highlightedCode = SyntaxHighlighter.ansiHighlight(code.drop(6))
+        buf.append(highlightedCode.split("[\n]").mkString("\n|  ", "\n|  ",""))
       case raw =>
         buf.append(s"${Ansi.FOREGROUND_COLOR(Color.GRAY)}$raw${Ansi.RESET_COLOR}")
     }
   }
   override def visit(node: BulletListNode): Unit = {
+    indent += 1
     // TODO - Put us in bulllet list node mode, and set indent.
     visitChildren(node)
+    indent -= 1
   }
   override def visit(node: BlockQuoteNode): Unit = ???
   override def visit(node: AutoLinkNode): Unit = {
@@ -111,9 +121,17 @@ class AnsiSerializer extends Visitor {
   override def visit(node: InlineHtmlNode): Unit = ???
   override def visit(node: ListItemNode): Unit = {
     // TODO - Choose a character based on the nesting level.
-    buf.append(s"\n ${Ansi.FOREGROUND_COLOR(Color.GRAY)}*${Ansi.RESET_COLOR} ")
+    buf.append(s"\n${makeIndent()}${makeBullet()} ")
     visitChildren(node)
   }
+  private def makeIndent(): String =
+    Seq.fill(indent)( "  ").mkString("")
+  private def makeBullet(): String =
+    indent match {
+      case 0 => s"${Ansi.FOREGROUND_COLOR(Color.GRAY)}*${Ansi.RESET_COLOR}"
+      case 1 => s"${Ansi.FOREGROUND_COLOR(Color.lightGray)}-${Ansi.RESET_COLOR}"
+      case n => s"${Ansi.FOREGROUND_COLOR(Color.lightGray)}~${Ansi.RESET_COLOR}"
+    }
   override def visit(node: MailLinkNode): Unit = ???
   override def visit(node: OrderedListNode): Unit = {
     // TODO - put us in orderedListNodeMode and set indent.
@@ -126,7 +144,9 @@ class AnsiSerializer extends Visitor {
   override def visit(node: QuotedNode): Unit = ???
   override def visit(node: ReferenceNode): Unit = ???
   override def visit(node: RefImageNode): Unit = ???
-  override def visit(node: RefLinkNode): Unit = ???
+  override def visit(node: RefLinkNode): Unit = {
+    System.err.println(s"Ignoring ref link node: $node, reference = ${node.referenceKey}")
+  }
 
   override def visit(node: RootNode): Unit = {
     // TODO - visit references/abberviations

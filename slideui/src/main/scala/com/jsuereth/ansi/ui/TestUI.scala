@@ -42,6 +42,7 @@ object TestUI {
 
 
   // TODO - avoid firing if no change.
+  // TODO - possibly clear screen on state change...
   lazy val slideUiState: Signal[SlideUiState] = {
     val keyPress = frp.events.collect {
       case End() =>
@@ -49,18 +50,18 @@ object TestUI {
           case FullScreenCamera => SlidesAndCamera
           case FullScreenSlides => FullScreenSlides
           case SlidesAndCamera => FullScreenSlides
-          case RickRoll => FullScreenCamera
+          case RickRoll => FullScreenSlides
         }
       case Home() =>
         slideUiState() match {
-          case RickRoll => FullScreenSlides
+          case RickRoll => FullScreenCamera
           case FullScreenCamera => FullScreenCamera
           case SlidesAndCamera => FullScreenCamera
           case FullScreenSlides => SlidesAndCamera
         }
       case KeyPress(114) => RickRoll
     }
-    keyPress.signal(SlidesAndCamera)
+    keyPress.signal(FullScreenSlides)
   }
 
   val completeLayout: Signal[SlideUILayout] =

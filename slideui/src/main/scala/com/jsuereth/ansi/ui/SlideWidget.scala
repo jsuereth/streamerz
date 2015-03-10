@@ -32,72 +32,6 @@ object SlideWidget {
       MarkdownToAnsi.convert(contents)
     }
   }
-
-  /*
-    Seq(
-      s"""
-          |  ${Ansi.BOLD} A Whirlwind Tour${Ansi.RESET_COLOR}
-          |  ${Ansi.ITALIC}of the ${Ansi.RED}Scala${Ansi.RESET_COLOR}${Ansi.ITALIC} Ecosystem${Ansi.RESET_COLOR}
-          |""".stripMargin,
-      s"""
-          |${Ansi.BOLD}Agenda${Ansi.RESET_COLOR}
-          |$B The core ${Ansi.RED}Scala${Ansi.RESET_COLOR} libraries
-          |$B The ${Ansi.CYAN}early wave${Ansi.RESET_COLOR} of libraries
-          |$B Up and coming
-          |$B Tooling""".stripMargin,
-    s"""| --===  ${Ansi.BOLD}${Ansi.RED}Core Scala${Ansi.RESET_COLOR} ==--
-        |
-        |$B Standard Library
-        |  $D Collections
-        |  $D Futures
-        |  $D Option, Try
-        |  $D Process
-        |$B Modules
-        |  $D Actors
-        |  $D Parser Combinators
-        |  $D XML
-     """.stripMargin,
-      s"""| --===  ${Ansi.BOLD}${Ansi.CYAN}The early wave${Ansi.RESET_COLOR} ==--
-          |
-          |$B Akka, Spray
-          |$B Lift
-          |$B Unfiltered
-          |$B Dispatch
-          |$B Scalaz
-          |$B Play
-          |$B Spire
-          |$B Scalatest, Specs, Scalacheck
-          |$B sbt
-     """.stripMargin,
-      s"""| --===  ${Ansi.BOLD}${Ansi.GREEN}Up and Coming${Ansi.RESET_COLOR} ==--
-        |
-        |$B Spark
-        |$B Akka Streams, Akka Http
-        |$B Reactive Collections
-        |$B cats, algebra, etc.
-        |$B Scalaz-Streams
-        | $D TODO - more
-        """.stripMargin,
-    s"""
-       | --==== ${Ansi.ITALIC} Credits ${Ansi.RESET_COLOR} ===i=--
-       |
-       | $B REPLesent (for the idea + syntax highlighter)
-       |   ${url("https://github.com/marconilanna/REPLesent")}
-       | $B Reactive Collections
-       |   ${url("http://reactive-collections.com/")}
-       | $B Akka Streams
-       | $B ASCII Art Tutorial
-       |   ${url("https://github.com/cb372/scala-ascii-art")}
-       | $B ANSI escape table
-       |   ${url("http://en.wikipedia.org/wiki/ANSI_escape_code")}
-     """.stripMargin,
-      s"""
-          |
-          |              FIN
-          |
-          |                                             """.stripMargin
-    )
-    */
 }
 
 class SlideWidget(renders: Reactive.Emitter[DisplayText], control: Reactive[SlideControlEvent], layout: Signal[ConsoleLayout]) {
@@ -124,7 +58,7 @@ class SlideWidget(renders: Reactive.Emitter[DisplayText], control: Reactive[Slid
 
 
   private val renderedSlide = (currentSlide zip layout) { case (slide, l) =>
-    val lines = slide.split("[\r\n]+")
+    val lines = slide.split("[\r]?[\n]")
     val maxHeight = l.size.height
     val maxWidth = l.size.width
     import Padding._

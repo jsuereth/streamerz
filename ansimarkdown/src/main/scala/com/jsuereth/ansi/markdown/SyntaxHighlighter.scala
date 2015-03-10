@@ -1,5 +1,7 @@
 package com.jsuereth.ansi.markdown
 
+import java.awt.Color
+
 import com.jsuereth.ansi.Ansi
 
 import scala.util.matching.Regex
@@ -22,14 +24,18 @@ object SyntaxHighlighter {
       s"${Ansi.BOLD}${Ansi.BLUE}${m.matched}${Ansi.RESET_COLOR}"
     })
     val specials = specialRegex.replaceAllIn(keywords, replacer = { m =>
-      s"${Ansi.BOLD}${m.matched}${Ansi.RESET_COLOR}"
+      s"${Ansi.BOLD}${Ansi.BLUE}${m.matched}${Ansi.RESET_COLOR}"
     })
     val strings = simpleStringRegex.replaceAllIn(specials, replacer = { m =>
       s"${Ansi.GREEN}${m.matched}${Ansi.RESET_COLOR}"
     })
-    typeRegex.replaceAllIn(strings, replacer = { m =>
+    val stringQuotes = typeRegex.replaceAllIn(strings, replacer = { m =>
       val matched = m.matched
       s"${matched.substring(0,1)}${Ansi.CYAN}${matched.substring(1)}${Ansi.RESET_COLOR}"
+    })
+    xmlRegex.replaceAllIn(stringQuotes, replacer = { m =>
+      val matched = m.matched
+      s"${Ansi.MAGENTA}${matched}${Ansi.RESET_COLOR}"
     })
   }
 
@@ -45,6 +51,7 @@ object SyntaxHighlighter {
   // Hackery to try to grab types...
   val typeRegex: Regex =
      """[^\:]\:[\s]+([^\s\)]+)""".r
+  val xmlRegex: Regex = "(<[^>]+>)".r
 
   // TODO - string highlighting...
 
@@ -52,6 +59,15 @@ object SyntaxHighlighter {
     ansiHighlight(
       s"""object Foo {
          |  val x = "Hi"
+         |  val y = true
          |  def foo(x: Int): Unit = println(x)
+         |  val x = <xml>test</xml>
+         |
+         |  for {
+         |    x <- hi
+         |    b <- yo
+         |  } yield x + b
          |}""".stripMargin)
+
+  def main(args: Array[String]): Unit = println(test)
 }

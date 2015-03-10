@@ -46,6 +46,16 @@ object MarkdownToAnsi {
 
   // lame unit tests.
   def main(args: Array[String]): Unit = {
+    System.err.println(convert(
+      """
+        |* Hello
+        |    - Everyone
+        |    - Bullets
+        |* Are
+        |    - Cool
+        |    - NoT!
+        |* really
+      """.stripMargin))
     System.err.println(convert("This is a [test link](http://test.com)"))
     System.err.println(convert("Here is a http://rawlink.com"))
     System.err.println(convert("*Italic*"))

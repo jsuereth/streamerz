@@ -1,3 +1,4 @@
 # A whirlwind tour
 
-## Of the %red%Scala %reset%ecosystem
+_Of the %red%Scala %white%ecosystem_
+
