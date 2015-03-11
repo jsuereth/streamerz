@@ -36,7 +36,7 @@ object TestUI {
   // Add a label which displays the current size of the terminal
   val sizeLabel = {
     val layout= frp.consoleSize map { s => ConsoleLayout(ConsolePosition(s.rows-1, s.cols-20), ConsoleSize(20, 1), Visible) }
-    val text = frp.consoleSize map { s => s"${Ansi.BLUE}${s.cols} x ${s.rows}${Ansi.RESET_COLOR}  and a ${Ansi.RESET_COLOR}bunch more stuff you can't show"}
+    val text = frp.consoleSize map { s => s"${Ansi.BLUE}${s.cols} x ${s.rows}${Ansi.RESET_COLOR}"}
     frp.label(text, layout)
   }
 

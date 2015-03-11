@@ -29,7 +29,12 @@ object SlideWidget {
       val contents =
         try s.getLines.mkString("\n")
         finally s.close()
-      MarkdownToAnsi.convert(contents)
+      try MarkdownToAnsi.convert(contents)
+      catch {
+        case e: Exception =>
+          System.err.println(s"Error parsing $f")
+          throw e
+      }
     }
   }
 }
