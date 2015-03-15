@@ -6,7 +6,6 @@ val commonSettings: Seq[Setting[_]] = Seq(
   scalaVersion := "2.11.5"
 )
 
-
 lazy val ansi =
   project.settings(commonSettings:_*)
 

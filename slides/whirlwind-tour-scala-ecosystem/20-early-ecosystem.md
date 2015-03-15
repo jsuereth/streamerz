@@ -10,12 +10,16 @@ to a set of the more mature projects in
 
 our ecosystem:
 
-* Akka
-* Dispatch
-* Unfiltered %blue%vs. %reset%Spray
-* Lift %blue%vs. %reset%Play
-* Scalaz
-* Spire
-* Scalatest, Specs2, Scalacheck
-* sbt
+* Utilities / Libraries
+    * Akka
+    * Dispatch
+    * Spire
+    * Slick (scalaquery)
+    * Scalaz
+* Web Framework
+    * Lift / Play
+    * Spray / Unfiltered
+* Tools
+    * scalacheck/scalatest/specs2
+    * sbt
 
