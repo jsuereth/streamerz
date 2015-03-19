@@ -33,6 +33,7 @@ object TestUI {
     layout=frp.consoleSize map { s => ConsoleLayout(ConsolePosition(s.rows-2, s.cols-25), ConsoleSize(25,1), Visible)})
 
 
+
   // Add a label which displays the current size of the terminal
   val sizeLabel = {
     val layout= frp.consoleSize map { s => ConsoleLayout(ConsolePosition(s.rows-1, s.cols-20), ConsoleSize(20, 1), Visible) }
@@ -73,7 +74,7 @@ object TestUI {
           case SlidesAndCamera =>
             val (slides, right) = Layouts.horizontalSplit(startingLayout, 0.7f)
             val (camera, ignore) = Layouts.verticalSplit(right)
-            SlideUILayout(camera, slides)
+            SlideUILayout(camera, slides, blank = ignore)
           case FullScreenCamera =>
             SlideUILayout(startingLayout, ConsoleLayout.empty)
           case FullScreenSlides =>
@@ -99,6 +100,18 @@ object TestUI {
   val slides = new SlideWidget(frp.renders, slideControl, slideLayout)
 
 
+
+  private val blankLabel = slideControl.map(_ => " ").signal(" ")
+  private val blank = frp.label(
+    blankLabel,
+    frp.consoleSize.map{ s => ConsoleLayout(ConsolePosition(s.rows-2, 0), ConsoleSize(s.cols-25, 3), Visible)}
+  )
+
+  private val blank2 = frp.label(
+    blankLabel,
+    completeLayout.map(_.blank)
+  )
+
   def main(args: Array[String]): Unit = {
     implicit val system = ActorSystem("webcam-ascii-snap")
     // TODO - should we inline the webcam size/location?
@@ -113,7 +126,8 @@ object TestUI {
 case class SlideUILayout(
   camera: ConsoleLayout,
   slides: ConsoleLayout,
-  rick: ConsoleLayout = ConsoleLayout.empty
+  rick: ConsoleLayout = ConsoleLayout.empty,
+  blank: ConsoleLayout = ConsoleLayout.empty
 ) {
   override def toString =
     s"""Layout {
