@@ -58,3 +58,8 @@ lazy val slideui =
         oldStrategy(x)
     }
   )
+
+lazy val pong =
+  project.settings(commonSettings:_*).dependsOn(ansiui).settings(
+    mainClass in assembly := Some("com.jsuereth.Pong")
+  )
