@@ -73,7 +73,7 @@ object TestUI {
           case SlidesAndCamera =>
             val (slides, right) = Layouts.horizontalSplit(startingLayout, 0.7f)
             val (camera, ignore) = Layouts.verticalSplit(right)
-            SlideUILayout(camera, slides)
+            SlideUILayout(camera, slides, blank=ignore)
           case FullScreenCamera =>
             SlideUILayout(startingLayout, ConsoleLayout.empty)
           case FullScreenSlides =>
@@ -87,6 +87,8 @@ object TestUI {
 
   val webcamLayout = completeLayout.map(_.camera)
   val rickLayout = completeLayout.map(_.rick)
+  val blankLayout = completeLayout.map(_.blank)
+  val blankLabel = frp.label(Signal.Constant(""), blankLayout)
 
   val slideControl = frp.events.collect {
     case Space() => NextSlide()
@@ -113,7 +115,8 @@ object TestUI {
 case class SlideUILayout(
   camera: ConsoleLayout,
   slides: ConsoleLayout,
-  rick: ConsoleLayout = ConsoleLayout.empty
+  rick: ConsoleLayout = ConsoleLayout.empty,
+  blank: ConsoleLayout = ConsoleLayout.empty
 ) {
   override def toString =
     s"""Layout {
