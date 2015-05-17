@@ -1,7 +1,7 @@
 package com.jsuereth
 
 import com.jsuereth.ansi.Ansi
-import com.jsuereth.ansi.ui.{DisplayText, KeyPress, DownKey, UpKey}
+import com.jsuereth.ansi.ui._
 import com.jsuereth.ansi.ui.frp.FrpConsoleUI
 
 import scala.reactive.{Signal, Reactive}
@@ -26,8 +26,8 @@ object Pong {
 
   val leftPaddleControl =
     frp.events.collect {
-      case KeyPress(x) if x == 'a'.toInt => Up
-      case KeyPress(x) if x == 'z'.toInt => Down
+      case Key(x) if x == 'a'.toInt => Up
+      case Key(x) if x == 'z'.toInt => Down
     }
 
   def paddleState(control: Reactive[PaddleControl], isLeft: Boolean): Signal[PaddleState] = {

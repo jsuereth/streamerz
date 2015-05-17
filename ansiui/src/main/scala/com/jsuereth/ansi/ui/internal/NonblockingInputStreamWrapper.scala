@@ -13,6 +13,9 @@ package com.jsuereth.ansi.ui.internal
 import java.io.IOException
 import java.io.InputStream
 
+object NonblockingInputStreamWrapper {
+  val READ_TIMEOUT = -2
+}
 /**
  * This class wraps a regular input stream and allows it to appear as if it
  * is non-blocking; that is, reads can be performed against it that timeout
@@ -38,7 +41,7 @@ import java.io.InputStream
  * Adapted by J. Suereth for Scala/FRP-ANSI
  */
 class NonBlockingInputStreamWrapper(in: InputStream) extends InputStream() {
-  private var ch: Int = -2             // Recently read character
+  private var ch: Int = NonblockingInputStreamWrapper.READ_TIMEOUT            // Recently read character
   private var threadIsReading: Boolean = false
   private var isShutdown: Boolean = false
   private var exception: IOException  = null
@@ -112,7 +115,7 @@ class NonBlockingInputStreamWrapper(in: InputStream) extends InputStream() {
     * If the thread hit an IOException, we report it.
     */
     if (exception != null) {
-      assert(ch == -2)
+      assert(ch == NonblockingInputStreamWrapper.READ_TIMEOUT)
       var toBeThrown = exception
       // TODO - why would be throwing null?  Seems odd in the original impl
       if(!isPeek)
@@ -187,7 +190,7 @@ class NonBlockingInputStreamWrapper(in: InputStream) extends InputStream() {
      */
     var ret = ch
     if (!isPeek) {
-      ch = -2
+      ch = NonblockingInputStreamWrapper.READ_TIMEOUT
     }
     ret
   }
@@ -238,7 +241,7 @@ class NonBlockingInputStreamWrapper(in: InputStream) extends InputStream() {
        * happen while we are holding the lock (which we aren't now).
        */
       if (!needToShutdown && needToRead) {
-        var charRead = -2
+        var charRead = NonblockingInputStreamWrapper.READ_TIMEOUT
         var failure: IOException = null
         try {
           charRead = in.read()

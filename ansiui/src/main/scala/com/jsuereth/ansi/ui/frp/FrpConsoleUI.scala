@@ -14,7 +14,13 @@ import scala.reactive.{Signal, Reactive}
  */
 final class FrpConsoleUI {
 
-  /** An emitter for all events which get fired out of MainUILoop. */
+  /** An emitter for all events which get fired out of MainUILoop.
+    *
+    * Right now these consist of two types:
+    *
+    * 1. KeyPress
+    * 2. ConsoleResize
+    */
   val events = new Reactive.Emitter[Event]
   private object dispatcher extends EventDispatcher {
     /** handle an event, globally, using this event dispatcher. */

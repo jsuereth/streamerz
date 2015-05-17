@@ -29,7 +29,7 @@ object TestUI {
 
   // Add a label which displays the latest event.
   private val latestEventLabel = frp.label(
-    text=frp.events.signal(KeyPress(0)).map(_.toString),
+    text=frp.events.signal(Key(0)).map(_.toString),
     layout=frp.consoleSize map { s => ConsoleLayout(ConsolePosition(s.rows-2, s.cols-25), ConsoleSize(25,1), Visible)})
 
 
@@ -59,7 +59,7 @@ object TestUI {
           case SlidesAndCamera => FullScreenCamera
           case FullScreenSlides => SlidesAndCamera
         }
-      case KeyPress(114) => RickRoll
+      case Key(114) => RickRoll
     }
     keyPress.signal(FullScreenSlides)
   }

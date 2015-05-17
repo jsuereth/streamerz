@@ -3,7 +3,7 @@ package com.jsuereth.ansi.ui
 import java.io.InputStream
 import java.util.concurrent.atomic.AtomicBoolean
 
-import com.jsuereth.ansi.ui.internal.NonBlockingInputStreamWrapper
+import com.jsuereth.ansi.ui.internal.{NonblockingInputStreamWrapper, NonBlockingInputStreamWrapper}
 
 import scala.util.matching.Regex
 
@@ -38,7 +38,7 @@ private[ui] class InputReadingThread(e: MainUILoop, in: java.io.InputStream = Sy
         // We need to special handle escape...
         // TODO - If we don't find an escape sequence, that means that just ESC was pressed...
         readEscapeSequence()
-      case n => KeyPress(n)
+      case n => Key(n)
     }
   }
 
@@ -46,27 +46,26 @@ private[ui] class InputReadingThread(e: MainUILoop, in: java.io.InputStream = Sy
     val CursorPositionExcape = new Regex("([0-9]+);([0-9]+)R")
     // Here we set a timeout on the read so we can try to detect an "ESC" press vs some other key.
     nonBlockingInput.read(timeout = 40L) match {
-        // Read timeout value, this means an escape was pressed.
-      case -2 => KeyPress(27)
+        // Read timeout value, this means an escape was pressed, as there is no follow-on characters.
+      case NonblockingInputStreamWrapper.READ_TIMEOUT => Key(27)
       case '[' =>
         // TODO - We should consume until an ANSI terminator, and then check the code.
+        // TODO - We should also have this kind of mapping be done via a "keymap".
         readAnsiCode() match {
-          case "A" => UpKey()
-          case "B" => DownKey()
-          case "C" => RightKey()
-          case "D" => LeftKey()
-          case "F" => End()
-          case "H" => Home()
+          //case "A" => UpKey()
+          //case "B" => DownKey()
+          //case "C" => RightKey()
+          //case "D" => LeftKey()
+          //case "F" => End()
+          //case "H" => Home()
           case CursorPositionExcape(row, col) => CursorPosition(row.toInt,col.toInt)
-          case s => UnknownAnsiCode(s)
+          case s => EscapeCode(s)
         }
       // TODO - This means escape was pressed.  Here we don't want to consume the n, we just want to
         // fire the ESC and then read the n.
-      case n if (n >= 64) && (n <= 95) =>
-        UnknownEscape(n)
-        // TODO - A timeout for this, so we can know just ESC was pressed.
+      case n if (n >= 64) && (n <= 95) => EscapeCode(s"$n")
       case n =>
-        // Here, we may be able to assume 'alt' was held before typign the character, as it's a known thing linux terminals do.
+        // Here, we may be able to assume 'alt' was held before typing the character, as it's a known thing linux terminals do.
         e.fire(DisplayText(s"Expected esacpe code, found char $n"))
         // TODO - ??? we need to expand our handling of keys.
         sys.error(s"Expecting escape code, found $n")
