@@ -3,6 +3,8 @@ package com.jsuereth.ansi.ui
 import java.io.InputStream
 import java.util.concurrent.atomic.AtomicBoolean
 
+import com.jsuereth.ansi.ui.internal.NonBlockingInputStreamWrapper
+
 import scala.util.matching.Regex
 
 
@@ -14,7 +16,9 @@ import scala.util.matching.Regex
  * @param in  The input stream we should use as stdin.
  */
 // TODO - This should probably be more sophisticated, e.g. attempting to distinguish CTRL characters and the like.
-private[ui] class InputReadingThread(e: MainUILoop, in: java.io.Console = System.console()) extends Thread(s"input-reading-thread") {
+//        Actually, there should be some kind of "keypress->event" mapping we could handle.
+private[ui] class InputReadingThread(e: MainUILoop, in: java.io.InputStream = System.in) extends Thread(s"input-reading-thread") {
+  val nonBlockingInput = new NonBlockingInputStreamWrapper(in)
   private val running = new AtomicBoolean(true)
   override def run(): Unit = {
     while(running.get) {
@@ -29,7 +33,7 @@ private[ui] class InputReadingThread(e: MainUILoop, in: java.io.Console = System
 
   /** Special handler which can handle special input and place it into an event appropriately. */
   private def readNextInput(): Event = {
-    in.reader.read() match {
+    nonBlockingInput.read() match {
       case 27 =>
         // We need to special handle escape...
         // TODO - If we don't find an escape sequence, that means that just ESC was pressed...
@@ -40,8 +44,10 @@ private[ui] class InputReadingThread(e: MainUILoop, in: java.io.Console = System
 
   private def readEscapeSequence(): Event = {
     val CursorPositionExcape = new Regex("([0-9]+);([0-9]+)R")
-    // TODO - Timeout the read.
-    in.reader.read() match {
+    // Here we set a timeout on the read so we can try to detect an "ESC" press vs some other key.
+    nonBlockingInput.read(timeout = 40L) match {
+        // Read timeout value, this means an escape was pressed.
+      case -2 => KeyPress(27)
       case '[' =>
         // TODO - We should consume until an ANSI terminator, and then check the code.
         readAnsiCode() match {
@@ -69,7 +75,7 @@ private[ui] class InputReadingThread(e: MainUILoop, in: java.io.Console = System
 
 
   private def readAnsiCode(sb: StringBuilder = new StringBuilder): String = {
-    in.reader.read.toChar match {
+    nonBlockingInput.read.toChar match {
       case term if (term > '@') && (term < '~') => sb.append(term).toString()
       case n => sb.append(n); readAnsiCode(sb)
     }
