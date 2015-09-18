@@ -3,7 +3,7 @@ package com.jsuereth.ansi.ui
 import java.util.concurrent.TimeUnit
 
 import akka.actor.{Props, ActorRefFactory, ActorSystem}
-import akka.stream.{FlowMaterializer, MaterializerSettings}
+import akka.stream.{Materializer, ActorMaterializerSettings}
 import akka.stream.actor.{ActorSubscriberMessage, ZeroRequestStrategy, RequestStrategy, ActorSubscriber}
 import akka.stream.scaladsl.{Sink, Source}
 import com.jsuereth.ansi.Ansi
@@ -126,7 +126,7 @@ object WebcamWidget {
 
     }
     implicit val factory = system
-    val settings = MaterializerSettings.create(system)
+    val settings = ActorMaterializerSettings.create(system)
     val asciiRenderer = TerminalRenderActor.consumer(system)
 
     source subscribe asciiRenderer
