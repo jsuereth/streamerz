@@ -15,7 +15,7 @@ object AsciiVideo {
     //val url = new java.io.File("goose.mp4").toURI.toASCIIString
     implicit val system = ActorSystem()
     val settings = ActorMaterializerSettings.create(system)
-    val video = Source(com.jsuereth.video.ffmpeg.readVideoURI(new java.net.URI(url), system, playAudio = true))
+    val video = Source(com.jsuereth.video.ffmpeg.readVideoURI(new java.net.URI(url), system, playAudio = false))
     val asciifier = com.jsuereth.video.AsciiVideo.pixelAscii
     val terminal: Sink[AsciiVideoFrame, Unit] = Sink(com.jsuereth.video.Terminal.terminalMoviePlayer(system))
     asciifier.to(terminal).runWith(video)(ActorMaterializer(settings))

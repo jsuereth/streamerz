@@ -106,7 +106,7 @@ object Ascii {
         if(lastColor != color) {
           // TODO - only end a span if one was created.
           buf.append("</span>")
-          buf.append(s"""<span style="display:inline; color: ${color}">""")
+          buf.append(s"""<span style="display:inline; color: #${color}">""")
         }
         val char = pixelator(pixel)
         buf.append(toHtmlString(char))

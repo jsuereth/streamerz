@@ -44,7 +44,8 @@ lazy val examples =
         oldStrategy(x)
     },
     mainClass in assembly := Some("examples.AsciiVideo"),
-    assemblyJarName in assembly := "console-roll.jar"
+    assemblyJarName in assembly := "console-roll.jar",
+    libraryDependencies ++= Seq(Deps.akkaHttp)
   )
 
 lazy val slideui =

@@ -45,7 +45,7 @@ object HtmlWebshot {
         System.err.println("WRiting image!")
         out.write(image)
         out.close()
-        system.shutdown()
+        //system.shutdown()
       case _ =>
         System.err.println("Failed to grab camera!")
         out.close()

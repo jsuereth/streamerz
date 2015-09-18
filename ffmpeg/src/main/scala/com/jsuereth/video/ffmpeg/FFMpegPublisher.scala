@@ -109,6 +109,10 @@ private class AudioPlayer() extends IMediaListener {
     val systemCl = ClassLoader.getSystemClassLoader
     thread.setContextClassLoader(systemCl)
     try f
+    catch {case e: Exception => 
+      println("Exception: " + e)
+      throw e
+    }
     finally thread.setContextClassLoader(old)
   }
 }
