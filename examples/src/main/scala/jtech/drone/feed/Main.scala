@@ -1,4 +1,5 @@
-package jtech.drone.feed
+package jtech.drone
+package feed
 
 import akka.actor._
 import akka.stream._
@@ -6,7 +7,7 @@ import akka.stream.scaladsl._
 import com.jsuereth.image.Ascii
 import com.jsuereth.video._
 
-object DroneMain extends App{
+object Main extends App{
   val url = "file:///Users/adilakhter/projects/dev/streamerz/examples/BlackBerry.mp4"
 
   implicit val actorSystem = ActorSystem("StreamPublisher")
