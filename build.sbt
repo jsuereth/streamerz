@@ -3,7 +3,7 @@
 val commonSettings: Seq[Setting[_]] = Seq(
   organization := "com.jsuereth",
   version := "0.1",
-  scalaVersion := "2.11.5"
+  scalaVersion := "2.11.7"
 )
 
 lazy val ansi =
