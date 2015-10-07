@@ -3,8 +3,11 @@
 val commonSettings: Seq[Setting[_]] = Seq(
   organization := "com.jsuereth",
   version := "0.1",
-  scalaVersion := "2.11.7"
+  scalaVersion := "2.11.7",
+  connectInput in run := true
 )
+
+
 
 lazy val ansi =
   project.settings(commonSettings:_*)

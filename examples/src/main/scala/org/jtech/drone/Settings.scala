@@ -11,6 +11,7 @@ import net.ceedubs.ficus.Ficus._
 class Settings(system: ExtendedActorSystem) extends Extension {
   private val config = system.settings.config.getConfig("ordina.jtech.drone")
   val HttpPort = config.as[Int]("ws.port")
+  val HttpInterface = "0.0.0.0"
 
   object kafka {
     val kafkaConsumerSettings = ConsumerProperties(
