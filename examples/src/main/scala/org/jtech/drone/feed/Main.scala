@@ -1,4 +1,5 @@
-package jtech.drone
+package org.jtech
+package drone
 package feed
 
 import akka.actor._
@@ -13,7 +14,7 @@ object Main extends App{
   implicit val actorSystem = ActorSystem("StreamPublisher")
   implicit val materializer = ActorMaterializer()
 
-  val settings = ActorMaterializerSettings.create(actorSystem)
+  val settings = Settings(actorSystem)
 
   // TODO: Create drone freed  source. At present it is being generated from the URL
   val videoSource: Source[VideoFrame, Unit] =
@@ -23,5 +24,7 @@ object Main extends App{
       playAudio = false))
 
 
-  AsciiStreamPublisher.publishFlow(videoSource, Ascii.toCharacterColoredAscii).run()
+  AsciiStreamPublisher(settings.kafka.kafkaProducerSettings)
+    .publishFlow(videoSource, Ascii.toCharacterColoredAscii)
+    .run()
 }
