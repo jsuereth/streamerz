@@ -12,4 +12,5 @@ object Deps {
   val scalaCompiler = Def.setting { "org.scala-lang" % "scala-compiler" % scalaVersion.value }
   val reactiveCollections = "com.storm-enroute" %% "reactive-collections" % "0.5"
   val pegdown = "org.pegdown" % "pegdown" % "1.5.0"
+  val kafka = "com.softwaremill.reactivekafka" %% "reactive-kafka-core" % "0.8.1"
 }

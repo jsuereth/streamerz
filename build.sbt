@@ -45,7 +45,7 @@ lazy val examples =
     },
     mainClass in assembly := Some("examples.AsciiVideo"),
     assemblyJarName in assembly := "console-roll.jar",
-    libraryDependencies ++= Seq(Deps.akkaHttp)
+    libraryDependencies ++= Seq(Deps.akkaHttp, Deps.kafka)
   )
 
 lazy val slideui =
