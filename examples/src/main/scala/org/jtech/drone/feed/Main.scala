@@ -9,10 +9,10 @@ import com.jsuereth.image.Ascii
 import com.jsuereth.video._
 
 object Main extends App{
-  val url = "file:///Users/adilakhter/projects/dev/streamerz/examples/BlackBerry.mp4"
-
   implicit val actorSystem = ActorSystem("StreamPublisher")
   implicit val materializer = ActorMaterializer()
+
+  val url = "file:///Users/adilakhter/projects/dev/streamerz/examples/BlackBerry.mp4"
 
   val settings = Settings(actorSystem)
 

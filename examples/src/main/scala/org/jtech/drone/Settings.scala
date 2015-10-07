@@ -8,10 +8,9 @@ import kafka.serializer._
 import com.typesafe.config._
 import net.ceedubs.ficus.Ficus._
 
-class Settings(rootConfig: Config) extends Extension {
-  private val config = rootConfig.getConfig("ordina.jtech.drone")
-
-  val HttpPort = config.as[Int]("http.port")
+class Settings(system: ExtendedActorSystem) extends Extension {
+  private val config = system.settings.config.getConfig("ordina.jtech.drone")
+  val HttpPort = config.as[Int]("ws.port")
 
   object kafka {
     val kafkaConsumerSettings = ConsumerProperties(
