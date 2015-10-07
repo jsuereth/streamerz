@@ -4,15 +4,11 @@ package ws
 
 import akka.actor._
 import akka.http.scaladsl._
-import akka.http.scaladsl.model.ws._
-import akka.http.scaladsl.server.Directives
 import akka.stream._
-import akka.stream.scaladsl._
-
 import scala.io._
 
 
-object Main extends App {
+object Main extends App with HttpService {
   implicit val system = ActorSystem("DronWsSystem")
   implicit val materializer = ActorMaterializer()
 
@@ -21,27 +17,6 @@ object Main extends App {
   scala.sys.ShutdownHookThread {
     system.log.info("shutting down the actor system")
     system.shutdown()
-  }
-
-  import Directives._
-
-  val routes = get {
-    pathEndOrSingleSlash {
-      complete("Welcome to websocket server")
-    }
-  } ~
-    path("ping") {
-      get{
-        // handleWebsocketMessages method will upgrade
-        // connections to websockets
-        // using echoService handler
-        handleWebsocketMessages(pingService)
-      }
-    }
-
-  val pingService: Flow[Message, Message, _] = Flow[Message].map {
-    case TextMessage.Strict(txt) ⇒ TextMessage("Pong: " + txt)
-    case _                       ⇒ TextMessage("Message type unsupported")
   }
 
   val binding = Http().bindAndHandle(routes, settings.HttpInterface, settings.HttpPort)
