@@ -1,8 +1,7 @@
 package com.jsuereth.video
 
-import java.awt.image.BufferedImage
-import java.io._
-import java.util.concurrent.TimeUnit
+import java.awt.image._
+import java.util.concurrent._
 
 
 /** Fundamental unit of video. */
