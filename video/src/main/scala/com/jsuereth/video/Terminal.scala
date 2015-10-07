@@ -3,13 +3,14 @@ package com.jsuereth.video
 import java.io.PrintStream
 import java.util.concurrent.TimeUnit
 
-import akka.actor.{Props, ActorSystem}
-import akka.stream.actor.{ActorSubscriberMessage, OneByOneRequestStrategy, ActorSubscriber}
-import com.jsuereth.ansi.Ansi
-import org.reactivestreams.Subscriber
+import akka.actor._
+import akka.stream.actor._
+import com.jsuereth.ansi._
+
+import org.reactivestreams._
 
 
-case class AsciiVideoFrame(image: String, timeStamp: Long, timeUnit: TimeUnit)
+
 
 object Terminal {
   /** Renders a video to stdout.
