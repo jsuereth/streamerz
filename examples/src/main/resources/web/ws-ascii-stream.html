@@ -7,7 +7,7 @@
 
 <script src="jquery-1.10.2.js"></script>
 <script>
-    var asciiData = new WebSocket("ws://localhost:5000/");
+    var asciiData = new WebSocket("ws://localhost:5000/ascii");
     asciiData.onopen = function(event) {
         console.log("Connected!", event);
     };

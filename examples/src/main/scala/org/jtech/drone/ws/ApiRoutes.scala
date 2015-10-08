@@ -4,14 +4,17 @@ package ws
 
 import akka.http.scaladsl.server.Directives._
 
-
 trait ApiRoutes {
   this: PingService ⇒
 
   val routes = get {
     pathEndOrSingleSlash {
-      getFromResource("web/ws-ping.html") // TODO: change it to ascii stream
+      getFromResource("web/ws-ascii-stream.html")
     } ~
+      path("ascii") {
+        // TODO: Implement Ascii Stream
+        handleWebsocketMessages(???)
+      } ~
       path("wsping") {
         getFromResource("web/ws-ping.html")
       } ~
