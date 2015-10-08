@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Websocket Ascii Stream</title>
+</head>
+<body>
+
+<script src="jquery-1.10.2.js"></script>
+<script>
+    var asciiData = new WebSocket("ws://localhost:5000/");
+    asciiData.onopen = function(event) {
+        console.log("Connected!", event);
+    };
+    asciiData.onmessage = function(event) {
+        var data = event.data;
+        console.log("Got following data", data);
+        $("body").html(data);
+    };
+</script>
+
+</body>
+</html>

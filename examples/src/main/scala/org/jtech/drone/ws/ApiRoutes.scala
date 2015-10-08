@@ -9,10 +9,16 @@ trait ApiRoutes {
   this: PingService ⇒
 
   val routes = get {
-    pathEndOrSingleSlash {
-      complete("Welcome to websocket server")
-    }
-  } ~
+      pathEndOrSingleSlash {
+        getFromResource("web/ws-ping.html") // TODO: change it to ascii stream 
+      } ~
+      getFromResourceDirectory("web")
+    } ~
+    path("wsping"){
+      get{
+        getFromResource("web/ws-ping.html")
+      }
+    } ~
     path("ping") {
       get{
         // handleWebsocketMessages method will upgrade
@@ -21,5 +27,4 @@ trait ApiRoutes {
         handleWebsocketMessages(pingFlow)
       }
     }
-
 }
