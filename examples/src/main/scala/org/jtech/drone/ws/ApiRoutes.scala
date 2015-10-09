@@ -5,7 +5,7 @@ package ws
 import akka.http.scaladsl.server.Directives._
 
 trait ApiRoutes {
-  this: PingService ⇒
+  this: PingService with AsciiService ⇒
 
   val routes = get {
     pathEndOrSingleSlash {
