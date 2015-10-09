@@ -1,3 +1,48 @@
+# Drone Project
+
+
+## How to start drone feed 
+
+### Prerequisites:
+
+
+```
+brew install kafka 
+brew install zookeper 
+```
+
+
+### Steps to run: 
+
+1. Start zookeeper: 
+
+```
+$ zkServer start
+```
+
+2. Run Kafka broker: 
+
+```
+$ kafka-server-start.sh /usr/local/etc/kafka/server.properties
+```
+
+
+3. In a different shell, run Kafka console consumer as follows: 
+
+```
+$ kafka-console-consumer.sh —topic DRONE_FEED —zookeeper localhost:2181
+```
+
+
+4. Run the Drone feed with SBT as follows: 
+
+```
+$  sbt “examples/runMain org.jtech.drone.feed.Main”
+```
+
+It would start running `org.jtech.drone.feed.Main` and we can see output the terminal where Kafka console consumer is running. 
+
+
 # Streamerz
 
 A playground of video processing examples in Akka streams and Scala.
