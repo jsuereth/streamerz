@@ -1,9 +1,8 @@
 package com.jsuereth.video
 
-import java.awt.image.BufferedImage
-import java.io.{ObjectInputStream, ObjectOutputStream}
-import java.util.concurrent.TimeUnit
-import javax.imageio.ImageIO
+import java.awt.image._
+import java.util.concurrent._
+
 
 /** Fundamental unit of video. */
 case class VideoFrame(image: BufferedImage, timeStamp: Long, timeUnit: TimeUnit)

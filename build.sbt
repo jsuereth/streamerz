@@ -3,8 +3,11 @@
 val commonSettings: Seq[Setting[_]] = Seq(
   organization := "com.jsuereth",
   version := "0.1",
-  scalaVersion := "2.11.5"
+  scalaVersion := "2.11.7",
+  connectInput in run := true
 )
+
+
 
 lazy val ansi =
   project.settings(commonSettings:_*)
@@ -45,7 +48,7 @@ lazy val examples =
     },
     mainClass in assembly := Some("examples.AsciiVideo"),
     assemblyJarName in assembly := "console-roll.jar",
-    libraryDependencies ++= Seq(Deps.akkaHttp)
+    libraryDependencies ++= Seq(Deps.akkaHttp, Deps.kafka, Deps.ficus)
   )
 
 lazy val slideui =
