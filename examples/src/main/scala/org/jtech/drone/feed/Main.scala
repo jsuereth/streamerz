@@ -12,19 +12,25 @@ object Main extends App{
   implicit val actorSystem = ActorSystem("StreamPublisher")
   implicit val materializer = ActorMaterializer()
 
-  val url = "file:///Users/adilakhter/projects/dev/streamerz/examples/BlackBerry.mp4"
+  val url = "file:///Users/remko/Dropbox/workspace/ordina/codeandcomedy/streamerz/examples/CharlietheUnicorn.mp4"
 
   val settings = Settings(actorSystem)
 
   // TODO: Create drone freed  source. At present it is being generated from the URL
+  val webcamSource: Source[VideoFrame, Unit] = Source(com.jsuereth.video.WebCam.default(actorSystem))
+
+  val one = webcamSource.take(1)
+
   val videoSource: Source[VideoFrame, Unit] =
     Source(
-      com.jsuereth.video.ffmpeg.readVideoURI(new java.net.URI(url),
-      actorSystem,
-      playAudio = false))
-
+      com.jsuereth.video.ffmpeg.readVideoURI(
+        new java.net.URI(url),
+        actorSystem,
+        playAudio = false
+      )
+    )
 
   AsciiStreamPublisher(settings.kafka.kafkaProducerSettings)
-    .publishFlow(videoSource, Ascii.toCharacterColoredAscii)
+    .publishFlow(one, Ascii.toCharacterColoredAscii)
     .run()
 }
