@@ -22,7 +22,7 @@ object WebSocketAsciiVideo extends App{
   
   val settings = ActorMaterializerSettings.create(system)
   val video = Source(com.jsuereth.video.WebCam.default(system))
-  val asciifier = asciiConversion(Ascii.toCharacterColoredHtml)
+  val asciifier = asciiConversion(Ascii.toCharacterColoredHtml, maxWidth = 80, maxHeight = 40)
   
   implicit val executor = system.dispatcher
   implicit val timeout = Timeout(1000.millis)
