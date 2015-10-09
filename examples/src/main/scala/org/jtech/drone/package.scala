@@ -10,6 +10,7 @@ package object drone {
    */
   trait ActorRefFactoryProvider {
     implicit def actorRefFactory: ActorRefFactory
+    implicit def actorSystem: ActorSystem
 
     def actorSystem(implicit refFactory: ActorRefFactory): ExtendedActorSystem = {
       refFactory match {
