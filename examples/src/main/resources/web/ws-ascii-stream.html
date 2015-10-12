@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<script src="jquery-1.10.2.js"></script>
+<div id="asciiCanvas" width="300" height="225" align="center"></div>
 <script>
     var asciiData = new WebSocket("ws://localhost:5000/ascii");
     asciiData.onopen = function(event) {
@@ -13,8 +13,9 @@
     };
     asciiData.onmessage = function(event) {
         var data = event.data;
-        console.log("Got following data", data);
-        $("body").html(data);
+        var c = document.getElementById("asciiCanvas");
+        c.innerHTML = data
+
     };
 </script>
 
