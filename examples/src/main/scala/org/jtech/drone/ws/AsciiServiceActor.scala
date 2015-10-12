@@ -2,10 +2,11 @@ package org.jtech.drone.ws
 
 import java.util.UUID
 
-import akka.actor.{ActorRef, Actor}
+import akka.actor.{ ActorRef, Actor }
 
 class AsciiServiceActor extends Actor {
   var participants: Map[UUID, ActorRef] = Map.empty[UUID, ActorRef]
+  var lastSend = System.currentTimeMillis()
 
   override def receive: Receive = {
     case UserJoined(id, actorRef) ⇒
@@ -16,16 +17,19 @@ class AsciiServiceActor extends Actor {
       participants -= id
       println(s"User $id left")
 
-    case w@WsMessage(_) ⇒
+    case w @ WsMessage(_) ⇒
       broadcast(w)
 
-    case _@err ⇒
+    case _@ err ⇒
       println(s"Unhandled message $err")
   }
-  
-  def broadcast(w: WsMessage): Unit = participants.values.foreach(_ ! w)
-}
 
+  def broadcast(w: WsMessage): Unit =
+    if (lastSend < System.currentTimeMillis()) {
+      lastSend += 200
+      participants.values.foreach(_ ! w)
+    }
+}
 
 sealed trait WsEvent
 

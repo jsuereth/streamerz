@@ -49,7 +49,7 @@ class BasicAsciiService(actorSystem: ActorSystem) extends AsciiService {
         case WsMessage(ascii) ⇒ TextMessage(ascii)
       }
     )
-
+    
     val asciiServiceActorSink = Sink.actorRef[WsEvent](serviceActor, UserLeft(consumerId))
 
     val merge = builder.add(Merge[WsEvent](2))
