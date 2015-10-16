@@ -2,17 +2,26 @@ package org.jtech
 package drone
 package ws
 
+import java.util.UUID
+
 import akka.actor._
 import akka.http.scaladsl._
-import akka.http.scaladsl.model.ws._
-import akka.http.scaladsl.server.Directives
+import akka.http.scaladsl.server.Directives._
 import akka.stream._
-import akka.stream.scaladsl._
+import akka.stream.javadsl.Sink
+import akka.stream.scaladsl.Source
+import com.softwaremill.react.kafka.KafkaMessages._
+import com.softwaremill.react.kafka._
+import org.reactivestreams.Publisher
 
-import scala.io._
 
 
-object Main extends App {
+import akka.http.scaladsl._
+import akka.stream.scaladsl.FlowGraph.Implicits._
+import akka.http.scaladsl.model.ws._
+
+
+object Main extends App  with PingService {
   implicit val system = ActorSystem("DronWsSystem")
   implicit val materializer = ActorMaterializer()
 
@@ -23,33 +32,37 @@ object Main extends App {
     system.shutdown()
   }
 
-  import Directives._
-
   val routes = get {
     pathEndOrSingleSlash {
-      complete("Welcome to websocket server")
-    }
-  } ~
-    path("ping") {
-      get{
+      getFromResource(s"web/ws-ascii-stream.html")
+    } ~
+      path("wsping") {
+        getFromResource("web/ws-ping.html")
+      } ~
+      pathPrefix("ascii") {
+        val consumerId = UUID.randomUUID()
+        handleWebsocketMessages(AsciiService.findOrCreateFlow.websocketFlow(consumerId))
+      } ~
+      path("ping") {
         // handleWebsocketMessages method will upgrade
         // connections to websockets
         // using echoService handler
-        handleWebsocketMessages(pingService)
-      }
-    }
-
-  val pingService: Flow[Message, Message, _] = Flow[Message].map {
-    case TextMessage.Strict(txt) ⇒ TextMessage("Pong: " + txt)
-    case _                       ⇒ TextMessage("Message type unsupported")
+        handleWebsocketMessages(pingFlow)
+      } ~
+      getFromResourceDirectory("web")
   }
+
 
   val binding = Http().bindAndHandle(routes, settings.HttpInterface, settings.HttpPort)
 
   println(s"Server is now online at http://${settings.HttpInterface}:${settings.HttpPort}. \nPress RETURN to stop...")
-  StdIn.readLine()
 
-  import system.dispatcher
-  binding.flatMap(_.unbind()).onComplete(_ ⇒ system.shutdown())
-  println("service is down ...")
+  val service: AsciiService = AsciiService.findOrCreateFlow(system)
+
+
+  val kafka = new ReactiveKafka()
+
+  val publisher: Publisher[StringKafkaMessage] = kafka.consume(settings.kafka.kafkaConsumerSettings)
+
+  Source(publisher).map(m ⇒ WsMessage(m.message())).map(m ⇒ service.sendMessage(m)).to(Sink.ignore).run()
 }

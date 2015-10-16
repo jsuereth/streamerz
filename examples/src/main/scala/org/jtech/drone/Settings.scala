@@ -1,6 +1,8 @@
 package org.jtech
 package drone
 
+import java.util.UUID
+
 import akka.actor._
 
 import com.softwaremill.react.kafka._
