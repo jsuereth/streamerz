@@ -12,22 +12,28 @@ import upickle.default.write
  * - chooseAsciiChar was too complex and wrong
  * - HTML is way too big:
  *     + Switching to JSON, with an array of colors and a long String of chars
+ *     + Save half the space on colors by using CSS shorthand 12bit format
  *     + Client knows resolution, will split string in lines and color the chars
  *     + JSON -> base64 -> zip
  * - Serializer has only one `for yield`, functional, no more vars
  */
-object Ascii {
+object Ascii extends App {
 
   type Pixel = Array[Byte]
-  case class AsciiPicture(colors: Seq[String], chars: String)
+  case class AsciiPicture(colors: Vector[String], chars: String)
 
   val palette = Vector(" ", ".", ",", ":", "*", "=", "+", "$", "%", "@", "A", "A", "#", "#")
 
-  def chooseAsciiChar(pixel: Pixel, palette: Array[String] = palette): String = {
+  def chooseAsciiChar(pixel: Pixel, palette: Vector[String] = palette): String = {
     // Grey value (light intensity)
-    val value = pixel.sum / 3.0
+    val value = pixel.map(_ & 0xFF).sum / 3.0  // Bitwise and with 0xFF to remove byte sign
     val index = ((value / 255.0) * palette.length).toInt
     palette(index)
+  }
+
+  def shorthandColor(pixel: Pixel): String = {
+    val formatted = pixel.map(b => (b & 0xFF) >> 4)  // Mask sign and keep most significant 4bits
+    "%01x%01x%01x".format(formatted: _*)             // Format hex string, list unpacking trick
   }
 
   private def asciify(image: BufferedImage): AsciiPicture = {
@@ -35,9 +41,7 @@ object Ascii {
     val pixels = image.getRaster.getDataBuffer.asInstanceOf[DataBufferByte].getData
 
     val picture = (for (pixel <- pixels.grouped(3).toVector) yield {
-      val char = chooseAsciiChar(pixel)
-      val color = "%02x%02x%02x".format(pixel(0), pixel(1), pixel(2))
-      (color, char)
+      (shorthandColor(pixel), chooseAsciiChar(pixel))
     }).unzip
 
     AsciiPicture(picture._1, picture._2.mkString)
@@ -47,4 +51,15 @@ object Ascii {
     write(asciify(image))
   }
 
+  def test = {
+    val testImage = new BufferedImage(20, 20, BufferedImage.TYPE_3BYTE_BGR)
+    // Fill with gradient
+    for (x <- 0 until testImage.getWidth; y <- 0 until testImage.getHeight) {
+      val value = ((x * 1.0 / testImage.getWidth) * 255).toInt
+      testImage.setRGB(x, y, value << 16 | value << 8 | value)
+    }
+    println(toJSON(testImage))
+  }
+
+  test
 }

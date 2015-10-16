@@ -43,7 +43,7 @@ object Main extends App{
     //.via(throttle(200 millis))
     .map(_.image)
     .map(resize)
-    .map(Ascii.asciifyToJSON)
+    .map(Ascii.toJSON)
     .to(Kafka.kafkaSink(settings.kafka.kafkaProducerSettings))
     .run()
 }
