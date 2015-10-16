@@ -2,17 +2,19 @@ package org.jtech
 package drone
 package feed
 
+import scala.language.postfixOps
+import scala.concurrent.duration._
+
 import java.awt.image.BufferedImage
 
 import akka.actor._
-import com.jsuereth.image.{Ascii, Resizer}
-import com.jsuereth.video._
-
-import scala.language.postfixOps
-
-import akka.stream.scaladsl._
 import akka.stream._
-import scala.concurrent.duration._
+import akka.stream.scaladsl._
+
+import org.jtech.drone.Ascii
+
+import com.jsuereth.image.Resizer
+import com.jsuereth.video._
 
 object Main extends App{
   implicit val actorSystem = ActorSystem("StreamPublisher")
@@ -41,7 +43,7 @@ object Main extends App{
     //.via(throttle(200 millis))
     .map(_.image)
     .map(resize)
-    .map(Ascii.toCharacterColoredHtml)
+    .map(Ascii.asciifyToJSON)
     .to(Kafka.kafkaSink(settings.kafka.kafkaProducerSettings))
     .run()
 }
