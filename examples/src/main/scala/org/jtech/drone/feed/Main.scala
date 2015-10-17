@@ -11,7 +11,7 @@ import akka.actor._
 import akka.stream._
 import akka.stream.scaladsl._
 
-import org.jtech.drone.Ascii
+import org.jtech.drone.Ascii._
 
 import com.jsuereth.image.Resizer
 import com.jsuereth.video._
@@ -43,7 +43,10 @@ object Main extends App{
     //.via(throttle(200 millis))
     .map(_.image)
     .map(resize)
-    .map(Ascii.toJSON)
+    .map(asciify)
+    .map(toJSON2)
+    .map(compress)
+    .map(toBase64)
     .to(Kafka.kafkaSink(settings.kafka.kafkaProducerSettings))
     .run()
 }
