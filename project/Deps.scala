@@ -14,4 +14,5 @@ object Deps {
   val pegdown             = "org.pegdown"                     % "pegdown"                  % "1.5.0"
   val kafka               = "com.softwaremill.reactivekafka" %% "reactive-kafka-core"      % "0.8.1"
   val ficus               = "net.ceedubs"                    %% "ficus"                    % "1.1.2"
+  val uPickle             = "com.lihaoyi"                    %% "upickle"                  % "0.3.6"
 }

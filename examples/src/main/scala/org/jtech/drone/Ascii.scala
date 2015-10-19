@@ -1,8 +1,10 @@
 package org.jtech.drone
 
 import java.awt.image.{DataBufferInt, BufferedImage}
+import java.io.File
 import java.util.Base64
 import java.util.zip.Deflater
+import javax.imageio.ImageIO
 
 import upickle.default.write
 
@@ -67,7 +69,7 @@ object Ascii extends App {
   }
 
   def compress(input: Array[Byte]): Array[Byte] = {
-    val deflater = new Deflater(Deflater.BEST_SPEED)
+    val deflater = new Deflater(Deflater.BEST_COMPRESSION)
     deflater.setInput(input)
     deflater.finish
 
@@ -89,6 +91,7 @@ object Ascii extends App {
   }
 
   def test = {
+
     val testImage = new BufferedImage(80, 60, BufferedImage.TYPE_INT_ARGB)
     // Fill with gradient
     for (x <- 0 until testImage.getWidth; y <- 0 until testImage.getHeight) {
@@ -96,20 +99,41 @@ object Ascii extends App {
       testImage.setRGB(x, y, 0xff << 24 | value << 16 | value << 8 | value)
     }
 
+    val root = new File("").getAbsolutePath
+    val testImage2 = new BufferedImage(80, 60, BufferedImage.TYPE_INT_ARGB)
+    val einstein = ImageIO.read(new File(root + "/src/main/scala/org/jtech/drone/einstein.png"))
+    val g = testImage2.createGraphics
+    g.drawImage(einstein, 0, 0, null);
+    g.dispose
+
     println("=" * 26)
     println(" " * 10 + "TIMES")
     println("=" * 26)
 
-    val oldMethod = time("HTML") { com.jsuereth.image.Ascii.toCharacterColoredHtml(testImage) }
-    val oldZipped = time("ZIP") { compress(oldMethod.getBytes) }
-    val oldBase64 = time("Base64") { toBase64(oldZipped) }
+    val oldMethod = time("HTML") {
+      com.jsuereth.image.Ascii.toCharacterColoredHtml(testImage2)
+    }
+    val oldZipped = time("ZIP") {
+      compress(oldMethod.getBytes)
+    }
+    val oldBase64 = time("Base64") {
+      toBase64(oldZipped)
+    }
 
     println("-" * 26)
 
-    val ascii = time("ASCIIfy") { asciify(testImage) }
-    val json = time("JSON") { toJSON2(ascii) }
-    val zipped = time("ZIP") { compress(json) }
-    val base64 = time("Base64") { toBase64(zipped) }
+    val ascii = time("ASCIIfy") {
+      asciify(testImage2)
+    }
+    val json = time("JSON") {
+      toJSON2(ascii)
+    }
+    val zipped = time("ZIP") {
+      compress(json)
+    }
+    val base64 = time("Base64") {
+      toBase64(zipped)
+    }
 
     println("=" * 26)
     println(" " * 10 + "SIZES")

@@ -48,8 +48,7 @@ lazy val examples =
     },
     mainClass in assembly := Some("examples.AsciiVideo"),
     assemblyJarName in assembly := "console-roll.jar",
-    libraryDependencies ++= Seq(Deps.akkaHttp, Deps.kafka, Deps.ficus),
-    libraryDependencies += "com.lihaoyi" %% "upickle" % "0.3.6"
+    libraryDependencies ++= Seq(Deps.akkaHttp, Deps.kafka, Deps.ficus, Deps.uPickle)
 
 )
 

@@ -1,32 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <title>Websocket Ascii Stream</title>
-    <script type="text/javascript" src="pako.min.js"></script>
-</head>
-<body>
-
-<div id="asciiCanvas" width="300" height="225" align="center"></div>
-<script>
-
-    // TODO:
-    // - create canvas
-    // - draw characters
-
-    var asciiData = new WebSocket("ws://localhost:5000/ascii");
-    asciiData.onopen = function(event) {
-        console.log("Connected!", event);
-    };
-    asciiData.onmessage = function(event) {
-        // Convert back from Base64 and wrap in a Uint8Array
-        console.log(event.data);
-        var binData = new Uint8Array(atob(event.data));
-        var data = pako.inflate(binData);
-        var strData = String.fromCharCode.apply(null, new Uint16Array(data));
-        console.log(strData);
-        var asciiImage = JSON.parse(strData);
-    };
-</script>
-
-</body>
+    <head>
+        <title>Websocket Ascii Stream</title>
+        <link rel="stylesheet" type="text/css" href="ascii.css">
+        <script type="text/javascript" src="pako.min.js"></script>
+    </head>
+    <body>
+        <div id="screen"></div>
+        <script src="ascii.js"></script>
+    </body>
 </html>
