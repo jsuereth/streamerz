@@ -43,6 +43,7 @@ object Main extends App{
     //.via(throttle(200 millis))
     .map(_.image)
     .map(resize)
+    .map(correctFormat)
     .map(asciify)
     .map(toJSON2)
     .map(compress)

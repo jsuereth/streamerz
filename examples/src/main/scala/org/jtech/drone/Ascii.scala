@@ -24,26 +24,31 @@ object Ascii extends App {
 
   type AsciiPicture = (Vector[String], String)
 
-  val palette = Vector(" ", ".", ",", ":", "*", "=", "+", "$", "%", "@", "A", "A", "#", "#")
-
-  def chooseAsciiChar(color: Int, palette: Vector[String] = palette): String = {
+  def chooseAsciiChar(color: Int, palette: Vector[String]): String = {
     // Average value of RGB components
     val value = ((color & 0xff) + ((color & 0xff00) >> 8) + ((color & 0xff000) >> 16)) / 3.0
     val index = ((value / 255.0) * palette.length).toInt
     palette(index)
   }
 
-  def shorthandColor(color: Int): String = {
+  def toHexString(color: Int): String = {
     // Manual string format is way too slow: +40ms
     Integer.toHexString(color).substring(2, 8) // Trick only works with TYPE_INT_ARGB
   }
 
-  def asciify(image: BufferedImage): (Vector[String], String) = {
+  def correctFormat(image: BufferedImage): BufferedImage = {
+    val corrected = new BufferedImage(image.getWidth, image.getHeight, BufferedImage.TYPE_INT_ARGB)
+    corrected.getGraphics.drawImage(image, 0, 0, null)
+    corrected
+  }
+
+  def asciify(image: BufferedImage): AsciiPicture = {
 
     val pixels = image.getRaster.getDataBuffer.asInstanceOf[DataBufferInt].getData
+    val palette = Vector(" ", ".", ",", ":", "*", "=", "+", "$", "%", "@", "A", "A", "#", "#")
 
     val picture = pixels.toVector.map { color =>
-      (shorthandColor(color), chooseAsciiChar(color))
+      (toHexString(color), chooseAsciiChar(color, palette))
     }.unzip
 
     (picture._1, picture._2.mkString)

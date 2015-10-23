@@ -6,7 +6,7 @@ import akka.actor.{ ActorRef, Actor }
 
 class AsciiServiceActor extends Actor {
   var participants: Map[UUID, ActorRef] = Map.empty[UUID, ActorRef]
-  var lastSend = System.currentTimeMillis()
+  var lastTime = System.currentTimeMillis
 
   override def receive: Receive = {
     case UserJoined(id, actorRef) ⇒
@@ -24,11 +24,13 @@ class AsciiServiceActor extends Actor {
       println(s"Unhandled message $err")
   }
 
-  def broadcast(w: WsMessage): Unit =
-    if (lastSend < System.currentTimeMillis()) {
-      lastSend += 200
+  def broadcast(w: WsMessage): Unit = {
+    val currentTime = System.currentTimeMillis
+    if (currentTime - lastTime > 32) {
+      lastTime = currentTime
       participants.values.foreach(_ ! w)
     }
+  }
 }
 
 sealed trait WsEvent
