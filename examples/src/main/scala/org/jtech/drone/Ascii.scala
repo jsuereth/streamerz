@@ -6,8 +6,6 @@ import java.util.Base64
 import java.util.zip.Deflater
 import javax.imageio.ImageIO
 
-import upickle.default.write
-
 /**
  * - Operations get repeated a lot, need to pre-cook things:
  *     + Array is directly Strings instead of casting from char at every loop iteration
@@ -54,12 +52,7 @@ object Ascii extends App {
     (picture._1, picture._2.mkString)
   }
 
-  // uPickler is too slow ! 73ms on average
   def toJSON(asciiPicture: AsciiPicture): Array[Byte] = {
-    write(asciiPicture).getBytes
-  }
-
-  def toJSON2(asciiPicture: AsciiPicture): Array[Byte] = {
     val buffer = new StringBuilder()
     buffer.append("{\"colors\":[")
     buffer.append(asciiPicture._1.map(s => "\""+s(0)+s(2)+s(4)+"\"").mkString(","))
@@ -131,7 +124,7 @@ object Ascii extends App {
       asciify(testImage2)
     }
     val json = time("JSON") {
-      toJSON2(ascii)
+      toJSON(ascii)
     }
     val zipped = time("ZIP") {
       compress(json)

@@ -45,7 +45,7 @@ object Main extends App{
     .map(resize)
     .map(correctFormat)
     .map(asciify)
-    .map(toJSON2)
+    .map(toJSON)
     .map(compress)
     .map(toBase64)
     .to(Kafka.kafkaSink(settings.kafka.kafkaProducerSettings))
