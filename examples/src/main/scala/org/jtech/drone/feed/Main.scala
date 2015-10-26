@@ -40,7 +40,6 @@ object Main extends App{
   val webcamSource: Source[VideoFrame, Unit] = Source(com.jsuereth.video.WebCam.default(actorSystem))
 
   webcamSource
-    //.via(throttle(200 millis))
     .map(_.image)
     .map(resize)
     .map(correctFormat)

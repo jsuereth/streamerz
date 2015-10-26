@@ -33,8 +33,6 @@ function update_canvas(asciiImage) {
     var w = canvas.width;
     var h = canvas.height;
 
-//    ctx.fillStyle = "#000";
-//    ctx.fillRect(0, 0, w, h);
     ctx.clearRect(0, 0, w, h);
 
     var dx = w / SCREEN_WIDTH;

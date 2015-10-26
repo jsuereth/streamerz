@@ -18,7 +18,7 @@ import javax.imageio.ImageIO
  *     + JSON -> base64 -> zip
  * - Made things more functional
  */
-object Ascii extends App {
+object Ascii {
 
   type AsciiPicture = (Vector[String], String)
 
@@ -152,5 +152,4 @@ object Ascii extends App {
     printResult("Base64", base64.length)
   }
 
-  test
 }
