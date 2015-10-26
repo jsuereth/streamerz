@@ -49,7 +49,7 @@ lazy val examples =
     mainClass in assembly := Some("examples.AsciiVideo"),
     assemblyJarName in assembly := "console-roll.jar",
     libraryDependencies ++= Seq(Deps.akkaHttp, Deps.kafka, Deps.ficus)
-)
+  )
 
 lazy val slideui =
   project.settings(commonSettings:_*).dependsOn(ansiui, image, webcam, ansimarkdown, ffmpeg).settings(
