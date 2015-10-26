@@ -29,6 +29,7 @@ class Settings(system: ExtendedActorSystem) extends Extension {
         topic = config.as[String]("kafka.topic.drone"),
         encoder = new StringEncoder()
       )
+    kafkaConsumerSettings.readFromEndOfStream()
   }
 }
 
