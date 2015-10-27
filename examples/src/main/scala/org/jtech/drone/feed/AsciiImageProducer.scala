@@ -16,7 +16,7 @@ import org.jtech.drone.Ascii._
 import com.jsuereth.image.Resizer
 import com.jsuereth.video._
 
-object Main extends App{
+object AsciiImageProducer extends App {
   implicit val actorSystem = ActorSystem("StreamPublisher")
   implicit val materializer = ActorMaterializer()
 
@@ -24,22 +24,20 @@ object Main extends App{
 
   def resize(img: BufferedImage): BufferedImage = Resizer.preserveRatioScale(img, 80, 60)
 
-  def throttle[T](rate: FiniteDuration): Flow[T, T, Unit] = {
-    Flow() { implicit builder ⇒
-      import akka.stream.scaladsl.FlowGraph.Implicits._
-      val zip = builder.add(Zip[T, Unit.type]())
-      Source(rate, rate, Unit) ~> zip.in1
-      (zip.in0, zip.out)
-    }.map(_._1)
+  var lastTime = System.currentTimeMillis
+  def limitFramerate[T](t: T): Boolean = {
+    val currentTime = System.currentTimeMillis
+    if (currentTime - lastTime > 32) {
+      lastTime = currentTime
+      true
+    } else false
   }
-
-
-
 
   // TODO: Create drone feed source. At present the source is the webcam
   val webcamSource: Source[VideoFrame, Unit] = Source(com.jsuereth.video.WebCam.default(actorSystem))
 
   webcamSource
+    .filter(limitFramerate)
     .map(_.image)
     .map(resize)
     .map(correctFormat)
