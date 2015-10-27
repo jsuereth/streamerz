@@ -25,6 +25,7 @@ object AsciiImageProducer extends App {
   def resize(img: BufferedImage): BufferedImage = Resizer.preserveRatioScale(img, 80, 60)
 
   var lastTime = System.currentTimeMillis
+
   def limitFramerate[T](t: T): Boolean = {
     val currentTime = System.currentTimeMillis
     if (currentTime - lastTime > 32) {
@@ -33,18 +34,33 @@ object AsciiImageProducer extends App {
     } else false
   }
 
-  // TODO: Create drone feed source. At present the source is the webcam
-  val webcamSource: Source[VideoFrame, Unit] = Source(com.jsuereth.video.WebCam.default(actorSystem))
+  val mode = "drone"
 
-  webcamSource
-    .filter(limitFramerate)
-    .map(_.image)
-    .map(resize)
-    .map(correctFormat)
-    .map(asciify)
-    .map(toJSON)
-    .map(compress)
-    .map(toBase64)
-    .to(Kafka.kafkaSink(settings.kafka.kafkaProducerSettings))
-    .run()
+  mode match {
+    case "webcam" =>
+      val webcamSource: Source[VideoFrame, Unit] = Source(com.jsuereth.video.WebCam.default(actorSystem))
+      webcamSource
+        .filter(limitFramerate)
+        .map(_.image)
+        .map(resize)
+        .map(correctFormat)
+        .map(asciify)
+        .map(toJSON)
+        .map(compress)
+        .map(toBase64)
+        .to(Kafka.kafkaSink(settings.kafka.kafkaProducerSettings))
+        .run()
+    case "drone" =>
+      val droneSource: Source[BufferedImage, Unit] = Source(DroneCamera.default(actorSystem))
+      droneSource
+        .filter(limitFramerate)
+        .map(resize)
+        .map(correctFormat)
+        .map(asciify)
+        .map(toJSON)
+        .map(compress)
+        .map(toBase64)
+        .to(Kafka.kafkaSink(settings.kafka.kafkaProducerSettings))
+        .run()
+  }
 }
