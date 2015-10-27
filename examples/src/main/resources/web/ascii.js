@@ -2,10 +2,6 @@
 // - create canvas
 // - draw characters
 
-var SCREEN_WIDTH = 73;
-var SCREEN_HEIGHT = 60;
-var SCREEN_RATIO = SCREEN_WIDTH / SCREEN_HEIGHT;
-
 function init_canvas() {
     var canvas = document.createElement("canvas");
     canvas.id     = "asciiCanvas";
@@ -13,30 +9,32 @@ function init_canvas() {
     return canvas;
 }
 
-function resize_canvas(canvas) {
-    if (window.innerWidth / window.innerHeight > SCREEN_RATIO) {
+function resize_canvas(canvas, width, height) {
+    var ratio = (width / height);
+    if (window.innerWidth / window.innerHeight > ratio) {
         canvas.height = window.innerHeight;
-        canvas.width = SCREEN_RATIO * canvas.height;
+        canvas.width = ratio * canvas.height;
     } else {
         canvas.width = window.innerWidth;
-        canvas.height = canvas.width / SCREEN_RATIO;
+        canvas.height = canvas.width / ratio;
     }
 }
 
 function update_canvas(asciiImage) {
-    var start = new Date().getTime();
-
     var canvas = document.getElementById("asciiCanvas");
     var ctx = canvas.getContext("2d");
 
-    resize_canvas(canvas);
+    var width = asciiImage.width;
+    var height = asciiImage.height;
+
+    resize_canvas(canvas, width, height);
     var w = canvas.width;
     var h = canvas.height;
 
     ctx.clearRect(0, 0, w, h);
 
-    var dx = w / SCREEN_WIDTH;
-    var dy = h / SCREEN_HEIGHT;
+    var dx = w / width;
+    var dy = h / height;
     var y0 = dy - 2;
     var n = asciiImage.colors.length;
 
@@ -47,14 +45,11 @@ function update_canvas(asciiImage) {
         ctx.fillStyle = "#" + asciiImage.colors[i];
         ctx.fillText(asciiImage.chars.charAt(i), x * dx, y0 + y * dy);
         ++x;
-        if (x == SCREEN_WIDTH) {
+        if (x == width) {
             x = 0;
             ++y;
         }
     }
-    var ms = (new Date().getTime() - start);
-    console.log("Render time: " + ms + "ms (" + Math.floor(1000 / ms) + "fps)");
-
 }
 
 function decode_decompress(base64) {
@@ -80,13 +75,9 @@ function init_websocket(queue) {
     };
 
     socket.onmessage = function(event) {
-
-        var start = new Date().getTime();
-            var json = decode_decompress(event.data);
-            var asciiImage = JSON.parse(json);
-        var ms = (new Date().getTime() - start);
+        var json = decode_decompress(event.data);
+        var asciiImage = JSON.parse(json);
         queue.push(asciiImage);
-        console.log("Decompress time: " + ms + "ms (" + Math.floor(1000 / ms) + "fps)");
     };
 }
 
