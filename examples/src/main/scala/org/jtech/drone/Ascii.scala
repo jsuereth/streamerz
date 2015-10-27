@@ -22,12 +22,12 @@ import com.typesafe.scalalogging.LazyLogging
  */
 object Ascii extends LazyLogging {
 
-  type AsciiPicture = (Vector[String], String)
+  type AsciiPicture = ((Int, Int), Vector[String], String)
 
   def chooseAsciiChar(color: Int, palette: Vector[String]): String = {
     // Average value of RGB components
-    val value = ((color & 0xff) + ((color & 0xff00) >> 8) + ((color & 0xff000) >> 16)) / 3.0
-    val index = ((value / 255.0) * palette.length).toInt
+    val value = ((color & 0xff) + ((color & 0xff00) >> 8) + ((color & 0xff0000) >> 16)) / 3.0
+    val index = ((value / 255.0) * (palette.length - 1)).toInt
     palette(index)
   }
 
@@ -51,16 +51,20 @@ object Ascii extends LazyLogging {
       (toHexString(color), chooseAsciiChar(color, palette))
     }.unzip
 
-    (picture._1, picture._2.mkString)
+    val size = (image.getWidth, image.getHeight)
+
+    (size, picture._1, picture._2.mkString)
   }
 
   def toJSON(asciiPicture: AsciiPicture): Array[Byte] = {
     val buffer = new StringBuilder()
     buffer.append("{\"colors\":[")
-    buffer.append(asciiPicture._1.map(s => "\""+s(0)+s(2)+s(4)+"\"").mkString(","))
+    buffer.append(asciiPicture._2.map(s => "\""+s(0)+s(2)+s(4)+"\"").mkString(","))
     buffer.append("],\"chars\":\"")
-    buffer.append(asciiPicture._2)
-    buffer.append("\"}")
+    buffer.append(asciiPicture._3)
+    buffer.append("\",")
+    buffer.append("\"width\":" + asciiPicture._1._1 + ",")
+    buffer.append("\"height\":" + asciiPicture._1._2 + "}")
     buffer.toString.getBytes
   }
 
