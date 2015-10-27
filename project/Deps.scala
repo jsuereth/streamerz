@@ -14,5 +14,6 @@ object Deps {
   val pegdown             = "org.pegdown"                     % "pegdown"                  % "1.5.0"
   val kafka               = "com.softwaremill.reactivekafka" %% "reactive-kafka-core"      % "0.8.1"
   val ficus               = "net.ceedubs"                    %% "ficus"                    % "1.1.2"
+  val javadrone           = "com.codeminders"                 % "javadrone-api"            % "1.3" from "http://search.maven.org/remotecontent?filepath=com/codeminders/javadrone-api/1.3/javadrone-api-1.3.jar"
   val logging             = "com.typesafe.scala-logging"     %% "scala-logging"            % "3.1.0"
 }

@@ -36,7 +36,6 @@ lazy val webcam =
     libraryDependencies ++= Seq(Deps.akkaStreams, Deps.webcam)
   ).dependsOn(video)
 
-
 lazy val examples =
   project.settings(commonSettings:_*).dependsOn(image, ffmpeg, webcam).settings(
     fork in (Compile, run) := true,
@@ -48,7 +47,7 @@ lazy val examples =
     },
     mainClass in assembly := Some("examples.AsciiVideo"),
     assemblyJarName in assembly := "console-roll.jar",
-    libraryDependencies ++= Seq(Deps.akkaHttp, Deps.kafka, Deps.ficus, Deps.logging)
+    libraryDependencies ++= Seq(Deps.akkaHttp, Deps.kafka, Deps.ficus, Deps.javadrone, Deps.logging)
   )
 
 lazy val slideui =
