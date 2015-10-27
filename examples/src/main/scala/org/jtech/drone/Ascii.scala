@@ -6,6 +6,8 @@ import java.util.Base64
 import java.util.zip.Deflater
 import javax.imageio.ImageIO
 
+import com.typesafe.scalalogging.LazyLogging
+
 /**
  * - Operations get repeated a lot, need to pre-cook things:
  *     + Array is directly Strings instead of casting from char at every loop iteration
@@ -18,7 +20,7 @@ import javax.imageio.ImageIO
  *     + JSON -> base64 -> zip
  * - Made things more functional
  */
-object Ascii {
+object Ascii extends LazyLogging {
 
   type AsciiPicture = (Vector[String], String)
 
@@ -69,7 +71,7 @@ object Ascii {
   def compress(input: Array[Byte]): Array[Byte] = {
     val deflater = new Deflater(Deflater.BEST_COMPRESSION)
     deflater.setInput(input)
-    deflater.finish
+    deflater.finish()
 
     val compressed = new Array[Byte](input.length * 2)
     val size = deflater.deflate(compressed)
@@ -84,11 +86,11 @@ object Ascii {
     val t1 = System.nanoTime()
     val ms = (t1 - t0) / 1000000
     val ps = if (ms > 0) "%5d/s".format(1000 / ms) else "    INF"
-    println("%-12s%3dms  %s".format(message, ms, ps))
+    logger.info("%-12s%3dms  %s".format(message, ms, ps))
     result
   }
 
-  def test = {
+  def test() = {
 
     val testImage = new BufferedImage(80, 60, BufferedImage.TYPE_INT_ARGB)
     // Fill with gradient
@@ -101,12 +103,12 @@ object Ascii {
     val testImage2 = new BufferedImage(80, 60, BufferedImage.TYPE_INT_ARGB)
     val einstein = ImageIO.read(new File(root + "/src/main/scala/org/jtech/drone/einstein.png"))
     val g = testImage2.createGraphics
-    g.drawImage(einstein, 0, 0, null);
-    g.dispose
+    g.drawImage(einstein, 0, 0, null)
+    g.dispose()
 
-    println("=" * 26)
-    println(" " * 10 + "TIMES")
-    println("=" * 26)
+    logger.info("=" * 26)
+    logger.info(" " * 10 + "TIMES")
+    logger.info("=" * 26)
 
     val oldMethod = time("HTML") {
       com.jsuereth.image.Ascii.toCharacterColoredHtml(testImage2)
@@ -118,7 +120,7 @@ object Ascii {
       toBase64(oldZipped)
     }
 
-    println("-" * 26)
+    logger.info("-" * 26)
 
     val ascii = time("ASCIIfy") {
       asciify(testImage2)
@@ -133,19 +135,19 @@ object Ascii {
       toBase64(zipped)
     }
 
-    println("=" * 26)
-    println(" " * 10 + "SIZES")
-    println("=" * 26)
+    logger.info("=" * 26)
+    logger.info(" " * 10 + "SIZES")
+    logger.info("=" * 26)
 
     def printResult(title: String, length: Int) {
-      println("%-10s%6dB %6.1fKB".format(title, length, length / 1000.0))
+      logger.info("%-10s%6dB %6.1fKB".format(title, length, length / 1000.0))
     }
 
     printResult("HTML", oldMethod.length)
     printResult("ZIP", oldZipped.length)
     printResult("Base64", oldBase64.length)
 
-    println("-" * 26)
+    logger.info("-" * 26)
 
     printResult("JSON", json.length)
     printResult("ZIP", zipped.length)
