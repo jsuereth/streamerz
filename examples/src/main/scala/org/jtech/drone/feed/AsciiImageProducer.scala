@@ -34,7 +34,9 @@ object AsciiImageProducer extends App {
     } else false
   }
 
-  val mode = "drone"
+  val mode =
+    if (args.length == 1 && args(0) == "drone") "drone"
+    else "webcam"
 
   mode match {
     case "webcam" =>
