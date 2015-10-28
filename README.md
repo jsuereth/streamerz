@@ -14,57 +14,48 @@ brew install zookeper
 
 ### Steps to run: 
 
-1. Start zookeeper: 
+1.  Start zookeeper:
 
-```
-$ zkServer start
-```
+    ```
+    $ zkServer start
+    ```
 
-2. Run Kafka broker: 
+2. Run Kafka broker:
 
-```
-$ kafka-server-start.sh /usr/local/etc/kafka/server.properties
-```
+   ```
+   $ kafka-server-start.sh /usr/local/etc/kafka/server.properties
+   ```
 
+   To monitor traffic, run Kafka console consumer as follows (in a different shell): 
+   
+   ```
+   $ kafka-console-consumer.sh —-topic DRONE_FEED —-zookeeper localhost:2181
+   ```
+   
+3. To use the webcam as a source: 
+   - Run:
+  
+     ```
+     $ sbt "examples/runMain org.jtech.drone.feed.AsciiImageProducer"
+     ```
+    
+   To use the drone as a source:
+    
+   - Turn on the drone
+   - After its initial checks, connect to its WiFi hotspot
+   - Run:
+   
+     ```
+     $ sbt "examples/runMain org.jtech.drone.feed.AsciiImageProducer drone"
+     ```
+     
+4. Launch the web server:
 
-3. In a different shell, run Kafka console consumer as follows: 
+   ```
+   $ sbt "examples/runMain org.jtech.drone.ws.Main"
+   ```
 
-```
-$ kafka-console-consumer.sh —-topic DRONE_FEED —-zookeeper localhost:2181
-```
-
-
-4. Run the Drone feed with SBT as follows: 
-
-```
-$  sbt "examples/runMain org.jtech.drone.feed.Main"
-```
-
-It would start running `org.jtech.drone.feed.Main` and we can see output the terminal where Kafka console consumer is running. 
-
-
-# Streamerz
-
-A playground of video processing examples in Akka streams and Scala.
-
-It's always been said that the best way to learn a topic through meme engineering.
-This set of libraries enables all the fun you never wanted to have.
-
-
-
-## Examples
-
-1.  Rendering your webcam to the terminal in Ascii art
-
-    $ sbt "examples/runMain examples.AsciiWebcam"
-
-2.  Render video (and audio) to the terminal in Ascii Art
-
-    $ sbt "examples/runMain examples.AsciiVideo"
-
-3. Create a swing video player that can play/pause an mp4
-
-    $ sbt "examples/runMain examples.VideoPlayer"
+You can now check your webcam/drone feed as an Ascii-art animation on `http://localhost:5000`
 
 
 ## License
