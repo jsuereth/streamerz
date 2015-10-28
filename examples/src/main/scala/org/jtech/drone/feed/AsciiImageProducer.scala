@@ -22,7 +22,7 @@ object AsciiImageProducer extends App {
 
   val settings = Settings(actorSystem)
 
-  def resize(img: BufferedImage): BufferedImage = Resizer.preserveRatioScale(img, 80, 60)
+  def resize(img: BufferedImage): BufferedImage = Resizer.forcedScale(img, 80, 60)
 
   var lastTime = System.currentTimeMillis
 

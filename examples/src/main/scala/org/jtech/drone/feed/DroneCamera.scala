@@ -1,13 +1,18 @@
 package org.jtech.drone.feed
 
-import java.awt.{Color, Graphics2D}
 import java.awt.image.BufferedImage
+import java.awt.{Font, Color, Graphics2D}
 
+import akka.actor.{ActorRefFactory, Props}
 import akka.stream.actor.{ActorPublisher, ActorPublisherMessage}
-import akka.actor.{Props, ActorSystem, ActorRefFactory}
-import com.codeminders.ardrone.{DroneVideoListener, DroneStatusChangeListener, ARDrone}
 import com.typesafe.scalalogging.LazyLogging
+import de.yadrone.base.ARDrone
+import de.yadrone.base.command.VideoCodec
+import de.yadrone.base.video.ImageListener
 import org.reactivestreams.Publisher
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent._
 
 object DroneCamera {
 
@@ -23,13 +28,14 @@ object DroneCameraProducer {
 }
 
 
-private class DroneCameraProducer extends ActorPublisher[BufferedImage] with LazyLogging with DroneVideoListener {
+private class DroneCameraProducer extends ActorPublisher[BufferedImage] with LazyLogging with ImageListener {
 
   val drone = new ARDrone()
   var connected = false
   var image = new BufferedImage(320, 240, BufferedImage.TYPE_INT_ARGB)
+  initImage()
 
-  {
+  def initImage() {
     val w1 = image.getWidth / 7
     val w2 = image.getWidth / 6
     val h2 = image.getHeight / 7
@@ -54,44 +60,38 @@ private class DroneCameraProducer extends ActorPublisher[BufferedImage] with Laz
       g2d.fillRect(i * w2, h1 + h2, w2, h3)
     }
 
+    g2d.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 74))
+    g2d.drawString("Booting", 0, image.getHeight / 2)
+
     g2d.dispose()
   }
 
   def initDrone() = {
-    drone.addStatusChangeListener(new DroneStatusChangeListener() {
-      override def ready() {
-        logger.debug("Drone ready")
-      }
-    })
-//    drone.selectVideoChannel(ARDrone.VideoChannel.HORIZONTAL_ONLY)
-    drone.enableAutomaticVideoBitrate()
-    drone.connect()
-    drone.waitForReady(10000)
-    drone.clearEmergencySignal()
-    drone.addImageListener(this)
+    drone.start()
+    drone.getCommandManager.setVideoCodec(VideoCodec.H264_AUTO_RESIZE)
+    drone.getCommandManager.setMaxVideoBitrate(250)
+    drone.getCommandManager.setVideoCodecFps(30)
+    drone.setHorizontalCamera()
+    drone.getVideoManager.addImageListener(this)
+    connected = true
   }
   override def receive: Receive = {
-    case b: BufferedImage =>
-      image = b
+    case bi: BufferedImage =>
+      if (totalDemand > 0) onNext(bi)
     case ActorPublisherMessage.Request(elements) =>
-      while (totalDemand > 0) onNext(getFrame)
+      if (!connected & totalDemand > 0) onNext(image)
     case ActorPublisherMessage.Cancel =>
-      drone.disconnect()
+      drone.getVideoManager.removeImageListener(this)
+      drone.stop()
+      connected = false
       context stop self
   }
 
-  def getFrame: BufferedImage = {
-//    if (!connected) initDrone()
-    image
+  Future { initDrone() }
+
+  override def imageUpdated(bi: BufferedImage): Unit = {
+    self ! bi
   }
 
-  override def frameReceived(startX: Int, startY: Int,
-                             w: Int, h: Int,
-                             rgbArray: Array[Int],
-                             offset: Int, scanSize: Int): Unit = {
-    val image = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB)
-    image.setRGB(startX, startY, w, h, rgbArray, offset, scanSize)
-    self ! image
-  }
 }
 
