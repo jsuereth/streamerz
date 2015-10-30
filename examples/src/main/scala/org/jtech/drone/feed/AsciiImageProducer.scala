@@ -38,31 +38,21 @@ object AsciiImageProducer extends App {
     if (args.length == 1 && args(0) == "drone") "drone"
     else "webcam"
 
-  mode match {
-    case "webcam" =>
-      val webcamSource: Source[VideoFrame, Unit] = Source(com.jsuereth.video.WebCam.default(actorSystem))
-      webcamSource
+    val source: Source[BufferedImage, Unit] = mode match {
+      case "webcam" => Source(com.jsuereth.video.WebCam.default(actorSystem))
         .filter(limitFramerate)
         .map(_.image)
-        .map(resize)
-        .map(correctFormat)
-        .map(asciify)
-        .map(toJSON)
-        .map(compress)
-        .map(toBase64)
-        .to(Kafka.kafkaSink(settings.kafka.kafkaProducerSettings))
-        .run()
-    case "drone" =>
-      val droneSource: Source[BufferedImage, Unit] = Source(DroneCamera.default(actorSystem))
-      droneSource
+      case "drone"  => Source(DroneCamera.default(actorSystem))
         .filter(limitFramerate)
-        .map(resize)
-        .map(correctFormat)
-        .map(asciify)
-        .map(toJSON)
-        .map(compress)
-        .map(toBase64)
-        .to(Kafka.kafkaSink(settings.kafka.kafkaProducerSettings))
-        .run()
-  }
+    }
+
+    source
+      .map(resize)
+      .map(correctFormat)
+      .map(asciify)
+      .map(toJSON)
+      .map(compress)
+      .map(toBase64)
+      .to(Kafka.kafkaSink(settings.kafka.kafkaProducerSettings))
+      .run()
 }
