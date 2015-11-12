@@ -68,18 +68,19 @@ private class DroneCameraProducer extends ActorPublisher[BufferedImage] with Laz
 
   def initDrone() = {
     drone.start()
-    drone.getCommandManager.setVideoCodec(VideoCodec.H264_AUTO_RESIZE)
+    drone.getCommandManager.setVideoCodec(VideoCodec.H264_360P)
     drone.getCommandManager.setMaxVideoBitrate(250)
     drone.getCommandManager.setVideoCodecFps(30)
     drone.setHorizontalCamera()
     drone.getVideoManager.addImageListener(this)
     connected = true
   }
+
   override def receive: Receive = {
     case bi: BufferedImage =>
-      if (totalDemand > 0) onNext(bi)
+      if (connected && totalDemand > 0) onNext(bi)
     case ActorPublisherMessage.Request(elements) =>
-      if (!connected & totalDemand > 0) onNext(image)
+      if (!connected && totalDemand > 0) onNext(image)
     case ActorPublisherMessage.Cancel =>
       drone.getVideoManager.removeImageListener(this)
       drone.stop()

@@ -34,7 +34,7 @@ object Main extends App  with PingService {
 
   val routes = get {
     pathEndOrSingleSlash {
-      getFromResource(s"web/ws-ascii-stream.html")
+      getFromResource("web/ws-ascii-stream.html")
     } ~
       path("wsping") {
         getFromResource("web/ws-ping.html")
