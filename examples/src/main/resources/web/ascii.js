@@ -68,7 +68,7 @@ function decode_decompress(base64) {
 }
 
 function init_websocket(queue) {
-    var socket = new WebSocket("ws://localhost:5000/ascii");
+    var socket = new WebSocket(window.location.href.replace("http","ws") + "ascii");
 
     socket.onopen = function(event) {
         console.log("Connected!", event);

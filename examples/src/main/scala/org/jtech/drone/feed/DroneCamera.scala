@@ -68,8 +68,8 @@ private class DroneCameraProducer extends ActorPublisher[BufferedImage] with Laz
 
   def initDrone() = {
     drone.start()
-    drone.getCommandManager.setVideoCodec(VideoCodec.H264_360P)
-    drone.getCommandManager.setMaxVideoBitrate(250)
+//    drone.getCommandManager.setVideoCodec(VideoCodec.MP4_360P)
+//    drone.getCommandManager.setMaxVideoBitrate(250)
     drone.getCommandManager.setVideoCodecFps(30)
     drone.setHorizontalCamera()
     drone.getVideoManager.addImageListener(this)
