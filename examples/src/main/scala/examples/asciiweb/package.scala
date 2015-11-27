@@ -1,9 +1,8 @@
-package org.jtech
+package examples
 
 import akka.actor._
 
-
-package object drone {
+package object asciiweb {
 
   /**
    * Mixin trait for providing an implementation of the Akka ActorRefFactory trait.

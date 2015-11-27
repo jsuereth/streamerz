@@ -7,7 +7,7 @@ import akka.stream.scaladsl.{Sink, Source}
 import com.jsuereth.ansi.ui.frp.FrpConsoleUI
 import com.jsuereth.ansi.ui.frp.layout._
 import com.jsuereth.ansi.{AnsiTerminal, Ansi}
-import com.jsuereth.image.Ascii
+import com.jsuereth.image.Ascii2
 import com.jsuereth.video.{VideoFrame, AsciiVideoFrame}
 import org.reactivestreams.Subscriber
 

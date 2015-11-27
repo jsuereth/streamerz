@@ -70,7 +70,7 @@ object WebcamWidget {
             val renderText = {
               val currentSize = currentLayout.size
               val resized = com.jsuereth.image.Resizer.forcedScale(image, currentSize.width, currentSize.height)
-              val ascii = com.jsuereth.image.Ascii.toCharacterColoredAscii(resized)
+              val ascii = com.jsuereth.image.Ascii2.toCharacterColoredAscii(resized)
               val ConsolePosition(row, col) = currentLayout.pos
               // Here we render and the fire the next video request.
               val lines =

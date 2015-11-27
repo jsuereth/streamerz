@@ -12,7 +12,7 @@ object Ascii {
 
   /** Convert an image to large pixels.  This uses whitespace and background color. */
   def toBackgroundAsciiSpaces(image: BufferedImage): String =
-     toAscii(image, Ansi.BACKGROUND_COLOR, _ => "  ")
+    toAscii(image, Ansi.BACKGROUND_COLOR, _ => "  ")
 
   /** Convert an image to foreground colored ascii characters. */
   def toCharacterColoredAscii(image: BufferedImage): String =

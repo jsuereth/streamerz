@@ -1,6 +1,4 @@
-package org.jtech
-package drone
-package ws
+package examples.asciiweb.ws
 
 import java.util.UUID
 
@@ -12,17 +10,12 @@ import akka.stream.javadsl.Sink
 import akka.stream.scaladsl.Source
 import com.softwaremill.react.kafka.KafkaMessages._
 import com.softwaremill.react.kafka._
+import examples.asciiweb.Settings
 import org.reactivestreams.Publisher
 
 
-
-import akka.http.scaladsl._
-import akka.stream.scaladsl.FlowGraph.Implicits._
-import akka.http.scaladsl.model.ws._
-
-
-object Main extends App  with PingService {
-  implicit val system = ActorSystem("DronWsSystem")
+object Main extends App {
+  implicit val system = ActorSystem("DroneWsSystem")
   implicit val materializer = ActorMaterializer()
 
   val settings = Settings(system)
@@ -36,22 +29,12 @@ object Main extends App  with PingService {
     pathEndOrSingleSlash {
       getFromResource("web/ws-ascii-stream.html")
     } ~
-      path("wsping") {
-        getFromResource("web/ws-ping.html")
-      } ~
-      pathPrefix("ascii") {
-        val consumerId = UUID.randomUUID()
-        handleWebsocketMessages(AsciiService.findOrCreateFlow.websocketFlow(consumerId))
-      } ~
-      path("ping") {
-        // handleWebsocketMessages method will upgrade
-        // connections to websockets
-        // using echoService handler
-        handleWebsocketMessages(pingFlow)
-      } ~
-      getFromResourceDirectory("web")
+    pathPrefix("ascii") {
+      val consumerId = UUID.randomUUID()
+      handleWebsocketMessages(AsciiService.findOrCreateFlow.websocketFlow(consumerId))
+    } ~
+    getFromResourceDirectory("web")
   }
-
 
   val binding = Http().bindAndHandle(routes, settings.HttpInterface, settings.HttpPort)
 

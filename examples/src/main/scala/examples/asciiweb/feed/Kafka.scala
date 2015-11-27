@@ -1,4 +1,4 @@
-package org.jtech.drone.feed
+package examples.asciiweb.feed
 
 import akka.actor.ActorSystem
 import akka.stream.scaladsl.Sink

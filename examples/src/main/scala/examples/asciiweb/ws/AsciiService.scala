@@ -1,14 +1,11 @@
-package org.jtech.drone.ws
+package examples.asciiweb.ws
 
 import java.util._
 
 import akka.actor._
-import akka.http.scaladsl._
-import akka.stream.scaladsl.FlowGraph.Implicits._
 import akka.http.scaladsl.model.ws._
-import akka.http.scaladsl.server._
-
 import akka.stream._
+import akka.stream.scaladsl.FlowGraph.Implicits._
 import akka.stream.scaladsl._
 
 trait AsciiService {

@@ -1,13 +1,8 @@
-package org.jtech
-package drone
-
-import java.util.UUID
+package examples.asciiweb
 
 import akka.actor._
-
 import com.softwaremill.react.kafka._
 import kafka.serializer._
-import com.typesafe.config._
 import net.ceedubs.ficus.Ficus._
 
 class Settings(system: ExtendedActorSystem) extends Extension {

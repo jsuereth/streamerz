@@ -1,8 +1,8 @@
-package org.jtech.drone.ws
+package examples.asciiweb.ws
 
 import java.util.UUID
 
-import akka.actor.{ ActorRef, Actor }
+import akka.actor.{Actor, ActorRef}
 
 class AsciiServiceActor extends Actor {
   var participants: Map[UUID, ActorRef] = Map.empty[UUID, ActorRef]
