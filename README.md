@@ -29,18 +29,24 @@ This set of libraries enables all the fun you never wanted to have.
 
 4. Run a web server that streams your webcam to web browsers in Ascii art
 
+    Dependencies:
+
     ```
     $ brew install kafka 
     $ brew install zookeper
     ```
 
+    Run in 3 terminals:
+
     ```
     $ zkServer start
-    $ kafka-server-start.sh /usr/local/etc/kafka/server.properties &
-    $ sbt "examples/runMain examples.asciiweb.feed.AsciiImageProducer" &
-    $ sbt "examples/runMain examples.asciiweb.ws.Main" &
+    $ kafka-server-start.sh /usr/local/etc/kafka/server.properties
+
+    $ sbt "examples/runMain examples.asciiweb.feed.AsciiImageProducer"
+
+    $ sbt "examples/runMain examples.asciiweb.ws.Main"
     ```
- 
+
   You can now check your webcam/drone feed as an Ascii-art animation on `http://localhost:8080`
 
 ## License
