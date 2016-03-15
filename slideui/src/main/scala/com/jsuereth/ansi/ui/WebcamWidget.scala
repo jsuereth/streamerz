@@ -3,7 +3,7 @@ package com.jsuereth.ansi.ui
 import java.util.concurrent.TimeUnit
 
 import akka.actor.{Props, ActorRefFactory, ActorSystem}
-import akka.stream.{FlowMaterializer, MaterializerSettings}
+import akka.stream.{Materializer, ActorMaterializerSettings}
 import akka.stream.actor.{ActorSubscriberMessage, ZeroRequestStrategy, RequestStrategy, ActorSubscriber}
 import akka.stream.scaladsl.{Sink, Source}
 import com.jsuereth.ansi.Ansi
@@ -70,7 +70,7 @@ object WebcamWidget {
             val renderText = {
               val currentSize = currentLayout.size
               val resized = com.jsuereth.image.Resizer.forcedScale(image, currentSize.width, currentSize.height)
-              val ascii = com.jsuereth.image.Ascii.toCharacterColoredAscii(resized)
+              val ascii = com.jsuereth.image.Ascii2.toCharacterColoredAscii(resized)
               val ConsolePosition(row, col) = currentLayout.pos
               // Here we render and the fire the next video request.
               val lines =
@@ -126,7 +126,7 @@ object WebcamWidget {
 
     }
     implicit val factory = system
-    val settings = MaterializerSettings.create(system)
+    val settings = ActorMaterializerSettings.create(system)
     val asciiRenderer = TerminalRenderActor.consumer(system)
 
     source subscribe asciiRenderer

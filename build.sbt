@@ -3,8 +3,11 @@
 val commonSettings: Seq[Setting[_]] = Seq(
   organization := "com.jsuereth",
   version := "0.1",
-  scalaVersion := "2.11.5"
+  scalaVersion := "2.11.7",
+  connectInput in run := true
 )
+
+
 
 lazy val ansi =
   project.settings(commonSettings:_*)
@@ -33,7 +36,6 @@ lazy val webcam =
     libraryDependencies ++= Seq(Deps.akkaStreams, Deps.webcam)
   ).dependsOn(video)
 
-
 lazy val examples =
   project.settings(commonSettings:_*).dependsOn(image, ffmpeg, webcam).settings(
     fork in (Compile, run) := true,
@@ -44,7 +46,8 @@ lazy val examples =
         oldStrategy(x)
     },
     mainClass in assembly := Some("examples.AsciiVideo"),
-    assemblyJarName in assembly := "console-roll.jar"
+    assemblyJarName in assembly := "console-roll.jar",
+    libraryDependencies ++= Seq(Deps.akkaHttp, Deps.kafka, Deps.ficus, Deps.logging)
   )
 
 lazy val slideui =

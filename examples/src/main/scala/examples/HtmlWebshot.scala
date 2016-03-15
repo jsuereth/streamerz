@@ -3,7 +3,7 @@ package examples
 import java.io.{FileWriter, FileOutputStream}
 
 import akka.actor.ActorSystem
-import akka.stream.{FlowMaterializer, MaterializerSettings}
+import akka.stream.{ActorMaterializer, ActorMaterializerSettings}
 import akka.stream.scaladsl.Source
 import com.jsuereth.image.{Resizer, Ascii}
 
@@ -19,9 +19,9 @@ object HtmlWebshot {
   def next(): Future[String] = {
     val result = concurrent.Promise.apply[String]
     val webcam = Source(com.jsuereth.video.WebCam.default(system))
-    val settings = MaterializerSettings.create(system)
-    implicit val materializer = FlowMaterializer(settings)
-    webcam.take(1).foreach { frame =>
+    val settings = ActorMaterializerSettings.create(system)
+    implicit val materializer = ActorMaterializer(settings)
+    webcam.take(1).runForeach { frame =>
       val image = Ascii.toCharacterColoredHtml(Resizer.preserveRatioScale(frame.image, 80, 50))
       result.success(
         s"""
@@ -45,7 +45,7 @@ object HtmlWebshot {
         System.err.println("WRiting image!")
         out.write(image)
         out.close()
-        system.shutdown()
+        //system.shutdown()
       case _ =>
         System.err.println("Failed to grab camera!")
         out.close()

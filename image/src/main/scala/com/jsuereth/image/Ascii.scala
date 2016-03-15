@@ -12,7 +12,7 @@ object Ascii {
 
   /** Convert an image to large pixels.  This uses whitespace and background color. */
   def toBackgroundAsciiSpaces(image: BufferedImage): String =
-     toAscii(image, Ansi.BACKGROUND_COLOR, _ => "  ")
+    toAscii(image, Ansi.BACKGROUND_COLOR, _ => "  ")
 
   /** Convert an image to foreground colored ascii characters. */
   def toCharacterColoredAscii(image: BufferedImage): String =
@@ -106,7 +106,7 @@ object Ascii {
         if(lastColor != color) {
           // TODO - only end a span if one was created.
           buf.append("</span>")
-          buf.append(s"""<span style="display:inline; color: ${color}">""")
+          buf.append(s"""<span style="display:inline; color: #${color}">""")
         }
         val char = pixelator(pixel)
         buf.append(toHtmlString(char))

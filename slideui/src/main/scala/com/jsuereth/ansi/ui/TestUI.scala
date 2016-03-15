@@ -1,13 +1,13 @@
 package com.jsuereth.ansi.ui
 
 import akka.actor.{ActorRefFactory, Props, ActorSystem}
-import akka.stream.{FlowMaterializer, MaterializerSettings}
+import akka.stream.{Materializer, ActorMaterializerSettings}
 import akka.stream.actor._
 import akka.stream.scaladsl.{Sink, Source}
 import com.jsuereth.ansi.ui.frp.FrpConsoleUI
 import com.jsuereth.ansi.ui.frp.layout._
 import com.jsuereth.ansi.{AnsiTerminal, Ansi}
-import com.jsuereth.image.Ascii
+import com.jsuereth.image.Ascii2
 import com.jsuereth.video.{VideoFrame, AsciiVideoFrame}
 import org.reactivestreams.Subscriber
 
@@ -118,7 +118,7 @@ object TestUI {
     val webcam = WebcamWidget.createWebcam(system, webcamLayout, frp.runnables)
     // TODO sync rick to realtime.
     val rick = WebcamWidget.createVideo(system, rickLayout, frp.runnables)
-    val settings = MaterializerSettings.create(system)
+    val settings = ActorMaterializerSettings.create(system)
     frp.run()
   }
 }
